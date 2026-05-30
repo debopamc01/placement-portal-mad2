@@ -6,6 +6,8 @@ from config import BASE_DIR, Config, ADMIN_EMAIL, ADMIN_PASSWORD
 from backend.models.model_enums import UserRole
 from backend.extensions import db, login_manager
 from backend.routes.auth import auth_bp
+from backend.routes.frontend import frontend_bp
+from backend.routes.admin import admin_bp
 from backend.models.company import Company
 from backend.models.job_application import JobApplication
 from backend.models.placement_drive import PlacementDrive
@@ -36,7 +38,8 @@ def create_backend_app():
     login_manager.init_app(app)
 
     app.register_blueprint(auth_bp)
-
+    app.register_blueprint(frontend_bp)
+    app.register_blueprint(admin_bp)
     with app.app_context():
         db.create_all()
         create_admin()
