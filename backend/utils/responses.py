@@ -3,6 +3,7 @@ from http import HTTPStatus
 
 
 def success_response(
+    *,
     message="Success",
     data=None,
     status=HTTPStatus.OK
@@ -18,6 +19,7 @@ def success_response(
 
 
 def error_response(
+    *,
     message="Error",
     errors=None,
     status=HTTPStatus.BAD_REQUEST
