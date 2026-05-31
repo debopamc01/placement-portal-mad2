@@ -1,21 +1,53 @@
+from __future__ import annotations
+from zoneinfo import ZoneInfo
+
+from sqlalchemy.orm import Mapped, relationship, mapped_column
+from datetime import datetime
+from typing import TYPE_CHECKING, Optional
+
 from backend.extensions import db
 from backend.models.model_enums import PlacementDriveStatus
 
+if TYPE_CHECKING:
+    from backend.models.company import Company
+    from backend.models.job_application import JobApplication
+
 
 class PlacementDrive(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    company_id = db.Column(
-        db.Integer, db.ForeignKey("company.id", ondelete="CASCADE"), nullable=False
+    id: Mapped[int] = mapped_column(primary_key=True)
+    company_id: Mapped[int] = mapped_column(
+        db.ForeignKey("company.id", ondelete="CASCADE"), nullable=False
     )
-    status = db.Column(
-        db.Enum(PlacementDriveStatus),
+    status: Mapped[PlacementDriveStatus] = mapped_column(
+        type_=db.Enum(PlacementDriveStatus),
         default=PlacementDriveStatus.PENDING,
         nullable=False,
     )
-    job_title = db.Column(db.String(100), nullable=False)
-    job_description = db.Column(db.Text, nullable=True)
-    eligibility_criteria = db.Column(db.Text, nullable=True)
-    application_deadline = db.Column(db.DateTime, nullable=True)
-    applications = db.relationship(
-        "JobApplication", backref="placement_drive", cascade="all, delete-orphan"
+    job_title: Mapped[str] = mapped_column(nullable=False)
+    job_description: Mapped[Optional[str]] = mapped_column(nullable=True)
+    eligibility_criteria: Mapped[Optional[str]] = mapped_column(nullable=True)
+    application_deadline: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    applications: Mapped[list[JobApplication]] = relationship(
+        "JobApplication", back_populates="placement_drive", cascade="all, delete-orphan"
     )
+    company: Mapped[Company] = relationship(
+        "Company", back_populates="placement_drives"
+    )
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "status": self.status.value,
+            "job_title": self.job_title,
+            "job_description": self.job_description,
+            "eligibility_criteria": self.eligibility_criteria,
+            "application_deadline": (
+                self.application_deadline.astimezone(
+                    tz=ZoneInfo("Asia/Kolkata")
+                ).isoformat()
+                if self.application_deadline
+                else None
+            ),
+            "application_ids": [application.id for application in self.applications],
+            "company_id": self.company.id,
+        }

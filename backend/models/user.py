@@ -1,22 +1,37 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Optional
 from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy.orm import Mapped, relationship, mapped_column, validates
+
 from backend.extensions import db, login_manager
 from backend.models.model_enums import UserRole
-from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy.orm import validates
+
+if TYPE_CHECKING:
+    from backend.models.company import Company
+    from backend.models.student import Student
 
 
 class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(200), nullable=False)
-    role = db.Column(db.Enum(UserRole), nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    email: Mapped[str] = mapped_column(unique=True, nullable=False)
+    password_hash: Mapped[str] = mapped_column(nullable=False)
+    role: Mapped[UserRole] = mapped_column(type_=db.Enum(UserRole), nullable=False)
 
-    student = db.relationship(
-        "Student", backref="user", cascade="all, delete-orphan", uselist=False
+    student: Mapped[Optional[Student]] = relationship(
+        "Student", back_populates="user", cascade="all, delete-orphan", uselist=False
     )
-    company = db.relationship(
-        "Company", backref="user", cascade="all, delete-orphan", uselist=False
+    company: Mapped[Optional[Company]] = relationship(
+        "Company", back_populates="user", cascade="all, delete-orphan", uselist=False
     )
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "email": self.email,
+            "role": self.role.value,
+        }
 
     @validates("password_hash")
     def validate_password_hash(self, key, value):
@@ -63,7 +78,7 @@ class User(db.Model, UserMixin):
         ``None`` during object construction.  A NoneType would otherwise
         trigger a ``TypeError`` when used with ``in``.
         """
-        if role not in UserRole:
+        if not isinstance(role, UserRole):
             raise ValueError("Invalid user role")
         return role
 
@@ -89,5 +104,5 @@ class User(db.Model, UserMixin):
 
 
 @login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
+def load_user(user_id) -> User | None:
+    return db.session.get(User, int(user_id))

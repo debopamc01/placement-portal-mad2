@@ -4,31 +4,23 @@ from http import HTTPStatus
 
 def success_response(
     *,
-    message="Success",
-    data=None,
-    status=HTTPStatus.OK
+    message: str = "Success",
+    data: dict | None = None,
+    status: HTTPStatus = HTTPStatus.OK,
 ):
 
-    response = {
-        "success": True,
-        "message": message,
-        "data": data
-    }
+    response = {"success": True, "message": message, "data": data}
 
     return jsonify(response), status
 
 
 def error_response(
     *,
-    message="Error",
-    errors=None,
-    status=HTTPStatus.BAD_REQUEST
+    message: str = "Error",
+    errors: str | None = None,
+    status: HTTPStatus = HTTPStatus.BAD_REQUEST,
 ):
 
-    response = {
-        "success": False,
-        "message": message,
-        "errors": errors
-    }
+    response = {"success": False, "message": message, "errors": errors}
 
     return jsonify(response), status

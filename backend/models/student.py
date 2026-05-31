@@ -1,17 +1,38 @@
+from __future__ import annotations
+
+from typing import Optional, TYPE_CHECKING
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from backend.extensions import db
+
+if TYPE_CHECKING:
+    from backend.models.job_application import JobApplication
+    from backend.models.user import User
 
 
 class Student(db.Model):
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_id = db.Column(
-        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("user.id", ondelete="CASCADE"), nullable=False, unique=True
     )
-    name = db.Column(db.String(100), nullable=False)
-    resume_url = db.Column(db.String(200), nullable=True)
-    # ids of the applications that the student has applied to, stored as a comma-separated string
-    # application_ids = db.Column(db.String(200), nullable=True)
-    description = db.Column(db.Text, nullable=True)
-    blacklisted = db.Column(db.Boolean, default=False, nullable=False)
-    applications = db.relationship(
-        "JobApplication", backref="student", cascade="all, delete-orphan"
+    name: Mapped[str] = mapped_column(nullable=False)
+    resume_url: Mapped[Optional[str]] = mapped_column(nullable=True)
+    description: Mapped[Optional[str]] = mapped_column(nullable=True)
+    blacklisted: Mapped[bool] = mapped_column(default=False, nullable=False)
+    applications: Mapped[list[JobApplication]] = relationship(
+        "JobApplication", back_populates="student", cascade="all, delete-orphan"
     )
+    user: Mapped[User] = relationship(
+        "User",
+        back_populates="student",
+    )
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "email": self.user.email,
+            "name": self.name,
+            "description": self.description,
+            "blacklisted": self.blacklisted,
+        }
