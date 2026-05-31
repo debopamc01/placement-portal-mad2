@@ -2,7 +2,8 @@ from __future__ import annotations
 from flask import Blueprint, request
 from flask_login import current_user, login_user, logout_user
 
-from backend.models.model_enums import UserRole
+from backend.models.company import Company
+from backend.models.model_enums import CompanyApprovalStatus, UserRole
 from backend.models.student import Student
 from backend.models.user import User
 from backend.utils.responses import *
@@ -47,6 +48,15 @@ def login():
             status=HTTPStatus.UNAUTHORIZED,
         )
 
+    if (
+        user.role == UserRole.COMPANY
+        and not user.company.approval_status == CompanyApprovalStatus.APPROVED
+    ):
+        return error_response(
+            errors="Company registration is still pending admin approval",
+            status=HTTPStatus.FORBIDDEN,
+        )
+
     status = login_user(user)
 
     if not status:
@@ -56,9 +66,7 @@ def login():
 
     return success_response(
         message="Login successful",
-        data={
-            "user": user.to_dict()
-        },
+        data={"user": user.to_dict()},
     )
 
 
@@ -79,9 +87,7 @@ def get_user():
 
     return success_response(
         message="User exists",
-        data={
-            "user": current_user.to_dict()
-        },
+        data={"user": current_user.to_dict()},
     )
 
 
@@ -111,6 +117,7 @@ def register_student():
     user_name = data.get("name")
     email = data.get("email")
     password = data.get("password")
+    description = data.get("description")
 
     if not user_name or not email or not password:
         return error_response(
@@ -118,7 +125,9 @@ def register_student():
             status=HTTPStatus.BAD_REQUEST,
         )
 
-    user = User.query.filter_by(email=email).first()
+    user = db.session.execute(
+        db.select(User).filter_by(email=email)
+    ).scalar_one_or_none()
 
     if user:
         return error_response(
@@ -127,15 +136,17 @@ def register_student():
         )
     # TODO: add logic for email and password validation
 
-    new_user = User()
-    new_user.email = email
-    new_user.set_password(password)
-    new_user.role = UserRole.STUDENT
-
-    new_student = Student()
-    new_student.user = new_user
-
     try:
+        new_user = User()
+        new_user.email = email
+        new_user.set_password(password)
+        new_user.role = UserRole.STUDENT
+
+        new_student = Student()
+        new_student.name = user_name
+        new_student.description = description
+        new_student.user = new_user
+
         db.session.add(new_user)
         db.session.add(new_student)
         db.session.commit()
@@ -146,9 +157,88 @@ def register_student():
             },
             status=HTTPStatus.CREATED,
         )
+    except ValueError as e:
+        db.session.rollback()
+
+        return error_response(
+            errors=str(e),
+            status=HTTPStatus.BAD_REQUEST,
+        )
     except Exception as e:
         db.session.rollback()
         return error_response(
             errors="Error occurred while registering student",
+            status=HTTPStatus.INTERNAL_SERVER_ERROR,
+        )
+
+
+@auth_bp.post("/register/company")
+def register_company():
+    """
+    Register a new company
+    """
+    data = request.get_json()
+
+    if not data:
+        return error_response(
+            errors="Invalid JSON payload",
+            status=HTTPStatus.BAD_REQUEST,
+        )
+    company_name = data.get("name")
+    email = data.get("email")
+    password = data.get("password")
+    hr_contact = data.get("hr_contact")
+    website = data.get("website")
+
+    if not company_name or not email or not password:
+        return error_response(
+            errors="Name, email and password are required",
+            status=HTTPStatus.BAD_REQUEST,
+        )
+
+    user = db.session.execute(
+        db.select(User).filter_by(email=email)
+    ).scalar_one_or_none()
+
+    if user:
+        return error_response(
+            errors="User with the specified email already exists",
+            status=HTTPStatus.CONFLICT,
+        )
+    # TODO: add logic for email and password validation
+
+    try:
+        new_user = User()
+        new_user.email = email
+        new_user.set_password(password)
+        new_user.role = UserRole.COMPANY
+
+        new_company = Company()
+        new_company.name = company_name
+        new_company.hr_contact = hr_contact
+        new_company.website = website
+        new_company.user = new_user
+
+        db.session.add(new_user)
+        db.session.add(new_company)
+        db.session.commit()
+        return success_response(
+            message="Company registered and awaiting admin approval",
+            data={
+                "company": new_company.to_dict(),
+            },
+            status=HTTPStatus.CREATED,
+        )
+    except ValueError as e:
+        db.session.rollback()
+
+        return error_response(
+            errors=str(e),
+            status=HTTPStatus.BAD_REQUEST,
+        )
+    except Exception as e:
+        db.session.rollback()
+        return error_response(
+            errors="Error occurred while registering company",
             status=HTTPStatus.INTERNAL_SERVER_ERROR,
         )
