@@ -1,5 +1,6 @@
 import os
 
+from flask.testing import FlaskClient
 import pytest
 
 from backend import create_backend_app
@@ -26,5 +27,5 @@ def app():
 
 
 @pytest.fixture
-def client(app):
+def client(app)->FlaskClient:
     return app.test_client()

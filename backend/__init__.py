@@ -16,7 +16,7 @@ from backend.models.user import User
 
 
 def create_admin() -> None:
-    admin = User.query.filter_by(email=ADMIN_EMAIL).first()
+    admin = db.session.scalar(db.select(User).where(User.email == ADMIN_EMAIL))
     if not admin:
         new_user = User()
         new_user.email = ADMIN_EMAIL

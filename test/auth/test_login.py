@@ -1,4 +1,7 @@
 def test_company_registration(client):
+    """
+    Test successful company registration
+    """
 
     response = client.post(
         "/api/auth/register/company",
@@ -12,6 +15,9 @@ def test_company_registration(client):
     assert response.status_code == 201
 
 def test_invalid_password(client):
+    """
+    Test student login with wrong password
+    """
 
     client.post(
         "/api/auth/register/student",

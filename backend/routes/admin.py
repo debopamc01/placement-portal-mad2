@@ -100,8 +100,8 @@ def blacklist_company(company_id: int):
 @admin_bp.post("/placement-drives/<int:placement_drive_id>/approve")
 def approve_placement_drive(placement_drive_id: int):
     placement_drive = db.session.scalar(
-        db.select(PlacementDrive).filter_by(
-            id=placement_drive_id,
+        db.select(PlacementDrive).where(
+            PlacementDrive.id == placement_drive_id,
         )
     )
     if placement_drive is None:
@@ -128,8 +128,8 @@ def approve_placement_drive(placement_drive_id: int):
 @admin_bp.post("/placement-drives/<int:placement_drive_id>/decline")
 def decline_placement_drive(placement_drive_id: int):
     placement_drive = db.session.scalar(
-        db.select(PlacementDrive).filter_by(
-            id=placement_drive_id,
+        db.select(PlacementDrive).where(
+            PlacementDrive.id == placement_drive_id,
         )
     )
     if placement_drive is None:

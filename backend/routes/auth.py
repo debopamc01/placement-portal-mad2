@@ -35,7 +35,7 @@ def login():
             status=HTTPStatus.BAD_REQUEST,
         )
 
-    user = User.query.filter_by(email=email).first()
+    user = db.session.scalar(db.select(User).where(User.email == email))
 
     if user is None:
         return error_response(
@@ -49,12 +49,18 @@ def login():
             status=HTTPStatus.UNAUTHORIZED,
         )
 
-    if (
-        user.role == UserRole.COMPANY
-        and not user.company.approval_status == CompanyApprovalStatus.APPROVED
+    if user.role == UserRole.COMPANY and not (
+        (approval_status := user.company.approval_status)
+        == CompanyApprovalStatus.APPROVED
     ):
+        if approval_status == CompanyApprovalStatus.REJECTED:
+            message = "Company registration has been rejected"
+        elif approval_status == CompanyApprovalStatus.BLACKLISTED:
+            message = "Company has been blacklisted"
+        else:
+            message = "Company registration is pending admin approval"
         return error_response(
-            errors="Company registration is still pending admin approval",
+            errors=message,
             status=HTTPStatus.FORBIDDEN,
         )
 
@@ -126,9 +132,7 @@ def register_student():
             status=HTTPStatus.BAD_REQUEST,
         )
 
-    user = db.session.execute(
-        db.select(User).filter_by(email=email)
-    ).scalar_one_or_none()
+    user = db.session.scalar(db.select(User).where(User.email == email))
 
     if user:
         return error_response(
@@ -197,9 +201,7 @@ def register_company():
             status=HTTPStatus.BAD_REQUEST,
         )
 
-    user = db.session.execute(
-        db.select(User).filter_by(email=email)
-    ).scalar_one_or_none()
+    user = db.session.scalar(db.select(User).where(User.email == email))
 
     if user:
         return error_response(

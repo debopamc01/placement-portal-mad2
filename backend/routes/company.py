@@ -90,9 +90,9 @@ def get_placement_drive(drive_id: int):
         )
 
     placement_drive = db.session.scalar(
-        db.select(PlacementDrive).filter_by(
-            id=drive_id,
-            company_id=current_user.company.id,
+        db.select(PlacementDrive).where(
+            PlacementDrive.id == drive_id,
+            PlacementDrive.company_id == current_user.company.id,
         )
     )
     if placement_drive is None:
@@ -110,11 +110,12 @@ def update_placement_drive(drive_id: int):
         return error_response(
             errors="Company is not yet approved", status=HTTPStatus.FORBIDDEN
         )
+
     placement_drive = db.session.scalar(
-        db.select(PlacementDrive).filter_by(
-            id=drive_id,
+        db.select(PlacementDrive).where(
+            PlacementDrive.id == drive_id,
             # Filter only those placement drives that belong to the company that is logged in
-            company_id=current_user.company.id,
+            PlacementDrive.company_id == current_user.company.id,
         )
     )
 
