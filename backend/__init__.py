@@ -8,6 +8,7 @@ from backend.extensions import db, login_manager
 from backend.routes.auth import auth_bp
 from backend.routes.frontend import frontend_bp
 from backend.routes.admin import admin_bp
+from backend.routes.company import company_bp
 from backend.models.company import Company
 from backend.models.job_application import JobApplication
 from backend.models.placement_drive import PlacementDrive
@@ -40,6 +41,7 @@ def create_backend_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(frontend_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(company_bp)
     with app.app_context():
         db.create_all()
         create_admin()
