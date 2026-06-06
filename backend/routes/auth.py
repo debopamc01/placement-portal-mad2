@@ -6,7 +6,8 @@ from backend.models.company import Company
 from backend.models.model_enums import CompanyApprovalStatus, UserRole
 from backend.models.student import Student
 from backend.models.user import User
-from backend.utils.responses import *
+from backend.utils.responses import error_response, success_response
+from http import HTTPStatus
 from backend.extensions import db
 
 auth_bp = Blueprint(name="auth", import_name=__name__, url_prefix="/api/auth")
