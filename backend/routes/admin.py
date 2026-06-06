@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from flask import Blueprint, Response
+from flask import Blueprint, Response, request
 from flask_login import login_required
 
 from backend.models.company import Company
@@ -10,6 +10,7 @@ from backend.models.model_enums import (
     UserRole,
     CompanyApprovalAction,
 )
+from backend.models.placement_drive import PlacementDrive
 from backend.utils.decorators import role_required
 from backend.utils.responses import error_response, success_response
 from backend.extensions import db
@@ -25,7 +26,7 @@ def modify_company_approval_status(
         return error_response(
             errors="Company does not exist", status=HTTPStatus.NOT_FOUND
         )
-    
+
     if not isinstance(action, CompanyApprovalAction):
         return error_response(
             errors=f"Invalid action: {action}", status=HTTPStatus.BAD_REQUEST
@@ -92,3 +93,92 @@ def blacklist_company(company_id: int):
     return modify_company_approval_status(
         company_id=company_id, action=CompanyApprovalAction.BLACKLIST
     )
+
+
+@login_required
+@role_required(UserRole.ADMIN)
+@admin_bp.post("/placement-drives/<int:placement_drive_id>/approve")
+def approve_placement_drive(placement_drive_id: int):
+    placement_drive = db.session.scalar(
+        db.select(PlacementDrive).filter_by(
+            id=placement_drive_id,
+        )
+    )
+    if placement_drive is None:
+        return error_response(
+            errors="No placement drive found with the specified id",
+            status=HTTPStatus.NOT_FOUND,
+        )
+    placement_drive.status = PlacementDriveStatus.ACTIVE
+    try:
+        db.session.commit()
+        return success_response(
+            data={
+                "placement_drive_id": placement_drive.id,
+                "status": placement_drive.status.value,
+            }
+        )
+    except Exception as e:
+        db.session.rollback()
+        return error_response(errors=str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR)
+
+
+@login_required
+@role_required(UserRole.ADMIN)
+@admin_bp.post("/placement-drives/<int:placement_drive_id>/decline")
+def decline_placement_drive(placement_drive_id: int):
+    placement_drive = db.session.scalar(
+        db.select(PlacementDrive).filter_by(
+            id=placement_drive_id,
+        )
+    )
+    if placement_drive is None:
+        return error_response(
+            errors="No placement drive found with the specified id",
+            status=HTTPStatus.NOT_FOUND,
+        )
+    placement_drive.status = PlacementDriveStatus.DECLINED
+    try:
+        db.session.commit()
+        return success_response(
+            data={
+                "placement_drive_id": placement_drive.id,
+                "status": placement_drive.status.value,
+            }
+        )
+    except Exception as e:
+        db.session.rollback()
+        return error_response(errors=str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR)
+
+
+@admin_bp.get("/placement-drives")
+@login_required
+@role_required(UserRole.ADMIN)
+def get_placement_drives():
+
+    try:
+        placement_drive_id = request.args.get("id")
+        company_name = request.args.get("company_name")
+        status = request.args.get("status")
+
+        query = db.select(PlacementDrive)
+
+        if placement_drive_id:
+            query.where(PlacementDrive.id == int(placement_drive_id))
+        if company_name:
+            query.join(Company).where(Company.name.ilike(f"%{company_name}%"))
+        if status:
+            if not status in PlacementDriveStatus._value2member_map_:
+                return error_response(
+                    errors=f"Invalid status specified: {status}",
+                    status=HTTPStatus.BAD_REQUEST,
+                )
+            query.where(PlacementDrive.status == PlacementDriveStatus(status))
+
+        placement_drives = db.session.scalars(query).all()
+
+        return success_response(
+            data={"placement_drives": [drive.to_dict() for drive in placement_drives]}
+        )
+    except Exception as e:
+        return error_response(errors=str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR)
