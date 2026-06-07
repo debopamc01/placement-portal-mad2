@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from typing import Sequence
 
 from flask import Blueprint, Response, request
 from flask_login import login_required
@@ -158,24 +159,24 @@ def get_placement_drives():
 
     try:
         placement_drive_id = request.args.get("id")
-        company_name = request.args.get("company_name")
+        company_name = request.args.get("company-name")
         status = request.args.get("status")
 
         query = db.select(PlacementDrive)
 
         if placement_drive_id:
-            query.where(PlacementDrive.id == int(placement_drive_id))
+            query = query.where(PlacementDrive.id == int(placement_drive_id))
         if company_name:
-            query.join(Company).where(Company.name.ilike(f"%{company_name}%"))
+            query = query.join(Company).where(Company.name.ilike(f"%{company_name}%"))
         if status:
             if not status in PlacementDriveStatus._value2member_map_:
                 return error_response(
                     errors=f"Invalid status specified: {status}",
                     status=HTTPStatus.BAD_REQUEST,
                 )
-            query.where(PlacementDrive.status == PlacementDriveStatus(status))
+            query = query.where(PlacementDrive.status == PlacementDriveStatus(status))
 
-        placement_drives = db.session.scalars(query).all()
+        placement_drives: Sequence[PlacementDrive] = db.session.scalars(query).all()
 
         return success_response(
             data={"placement_drives": [drive.to_dict() for drive in placement_drives]}
