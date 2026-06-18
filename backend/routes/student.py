@@ -6,12 +6,12 @@ from zoneinfo import ZoneInfo
 from flask import Blueprint, request
 from flask_login import current_user, login_required
 
-from app.models.job_application import JobApplication
-from app.models.model_enums import PlacementDriveStatus, UserRole
-from app.models.placement_drive import PlacementDrive
-from app.utils.decorators import role_required
-from app.utils.responses import error_response, success_response
-from app.extensions import db
+from backend.models.job_application import JobApplication
+from backend.models.model_enums import PlacementDriveStatus, UserRole
+from backend.models.placement_drive import PlacementDrive
+from backend.utils.decorators import role_required
+from backend.utils.responses import error_response, success_response
+from backend.extensions import db
 
 student_bp = Blueprint("student", __name__, url_prefix="/api/student")
 

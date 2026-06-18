@@ -3,14 +3,14 @@ import os
 from flask.testing import FlaskClient
 import pytest
 
-from app import create_app
-from app.extensions import db
+from backend import create_backend_app
+from backend.extensions import db
 
 
 @pytest.fixture
 def app():
 
-    app = create_app()
+    app = create_backend_app()
 
     app.config.update(
         TESTING=True,

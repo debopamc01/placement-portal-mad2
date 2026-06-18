@@ -4,11 +4,11 @@ from typing import Optional, TYPE_CHECKING
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.extensions import db
+from backend.extensions import db
 
 if TYPE_CHECKING:
-    from app.models.job_application import JobApplication
-    from app.models.user import User
+    from backend.models.job_application import JobApplication
+    from backend.models.user import User
 
 
 class Student(db.Model):

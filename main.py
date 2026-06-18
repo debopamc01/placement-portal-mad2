@@ -1,7 +1,7 @@
-from app import create_app
+from backend import create_backend_app
 
 def main():
-    app = create_app()
+    app = create_backend_app()
     app.run(debug=True)
 
 if __name__ == "__main__":

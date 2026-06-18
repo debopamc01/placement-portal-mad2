@@ -1,8 +1,8 @@
 from datetime import datetime
 
-from app.extensions import db
-from app.models.user import User
-from app.models.model_enums import (
+from backend.extensions import db
+from backend.models.user import User
+from backend.models.model_enums import (
     CompanyApprovalStatus,
 )
 

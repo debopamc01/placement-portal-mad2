@@ -5,12 +5,12 @@ from zoneinfo import ZoneInfo
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
 
-from app.extensions import db
-from app.models.model_enums import JobApplicationStatus
+from backend.extensions import db
+from backend.models.model_enums import JobApplicationStatus
 
 if TYPE_CHECKING:
-    from app.models.student import Student
-    from app.models.placement_drive import PlacementDrive
+    from backend.models.student import Student
+    from backend.models.placement_drive import PlacementDrive
 
 
 class JobApplication(db.Model):
