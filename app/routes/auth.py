@@ -2,13 +2,13 @@ from __future__ import annotations
 from flask import Blueprint, request
 from flask_login import current_user, login_user, logout_user
 
-from backend.models.company import Company
-from backend.models.model_enums import CompanyApprovalStatus, UserRole
-from backend.models.student import Student
-from backend.models.user import User
-from backend.utils.responses import error_response, success_response
+from app.models.company import Company
+from app.models.model_enums import CompanyApprovalStatus, UserRole
+from app.models.student import Student
+from app.models.user import User
+from app.utils.responses import error_response, success_response
 from http import HTTPStatus
-from backend.extensions import db
+from app.extensions import db
 
 auth_bp = Blueprint(name="auth", import_name=__name__, url_prefix="/api/auth")
 

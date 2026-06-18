@@ -5,12 +5,12 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm import Mapped, relationship, mapped_column, validates
 
-from backend.extensions import db, login_manager
-from backend.models.model_enums import UserRole
+from app.extensions import db, login_manager
+from app.models.model_enums import UserRole
 
 if TYPE_CHECKING:
-    from backend.models.company import Company
-    from backend.models.student import Student
+    from app.models.company import Company
+    from app.models.student import Student
 
 
 class User(db.Model, UserMixin):

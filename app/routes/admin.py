@@ -4,17 +4,17 @@ from typing import Sequence
 from flask import Blueprint, Response, request
 from flask_login import login_required
 
-from backend.models.company import Company
-from backend.models.model_enums import (
+from app.models.company import Company
+from app.models.model_enums import (
     CompanyApprovalStatus,
     PlacementDriveStatus,
     UserRole,
     CompanyApprovalAction,
 )
-from backend.models.placement_drive import PlacementDrive
-from backend.utils.decorators import role_required
-from backend.utils.responses import error_response, success_response
-from backend.extensions import db
+from app.models.placement_drive import PlacementDrive
+from app.utils.decorators import role_required
+from app.utils.responses import error_response, success_response
+from app.extensions import db
 
 admin_bp = Blueprint(name="admin", import_name=__name__, url_prefix="/api/admin")
 
