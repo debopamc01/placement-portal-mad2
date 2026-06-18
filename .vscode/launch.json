@@ -2,11 +2,27 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Run Flask App",
+            "name": "Flask Backend",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/main.py",
             "console": "integratedTerminal"
+        },
+        {
+            "name": "Vue Frontend",
+            "type": "msedge",
+            "request": "launch",
+            "url": "http://localhost:5173",
+            "webRoot": "${workspaceFolder}/frontend"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Full Stack",
+            "configurations": [
+                "Flask Backend",
+                "Vue Frontend"
+            ]
         }
     ]
 }

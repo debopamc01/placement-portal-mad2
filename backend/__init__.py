@@ -1,6 +1,7 @@
 import os
 
 from flask import Flask
+from flask_cors import CORS
 
 from config import BASE_DIR, Config, ADMIN_EMAIL, ADMIN_PASSWORD
 from backend.models.model_enums import UserRole
@@ -33,6 +34,12 @@ def create_backend_app():
     static_dir = os.path.abspath(os.path.join(BASE_DIR, "backend", "static"))
     os.makedirs(os.path.join(BASE_DIR, "backend", "instance"), exist_ok=True)
     app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
+
+    CORS(
+        app,
+        supports_credentials=True,
+        origins=["http://localhost:5173"],
+    )
     app.config.from_object(Config)
 
     db.init_app(app)
