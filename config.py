@@ -7,6 +7,6 @@ ADMIN_PASSWORD = "Admin@12345"
 class Config:
     SECRET_KEY = "secret-key"
     SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(
-        BASE_DIR, "backend", "instance", "placement.db"
+        BASE_DIR, "app", "instance", "placement.db"
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False

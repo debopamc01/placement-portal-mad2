@@ -27,7 +27,7 @@ def create_admin() -> None:
         db.session.commit()
 
 
-def create_backend_app():
+def create_app():
     # Get the parent directory (project root) to locate templates folder
     template_dir = os.path.abspath(os.path.join(BASE_DIR, "app", "templates"))
     static_dir = os.path.abspath(os.path.join(BASE_DIR, "app", "static"))
