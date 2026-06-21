@@ -1,5 +1,10 @@
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '../stores/auth';
+
+const router = useRouter();
+const authStore = useAuthStore();
 
 const email = ref('');
 const password = ref('');
@@ -9,64 +14,59 @@ async function login() {
   errorMessage.value = '';
 
   try {
-    const response = await fetch('http://127.0.0.1:5000/api/auth/login', {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: email.value,
-        password: password.value,
-      }),
-    });
+    await authStore.login(email.value, password.value);
 
-    const data = await response.json();
+    const role = authStore.user.role;
 
-    console.log(data);
-
-    if (!response.ok) {
-      errorMessage.value = data.errors;
-      return;
+    if (role === 'admin') {
+      router.push('/admin');
+    } else if (role === 'company') {
+      router.push('/company');
+    } else {
+      router.push('/student');
     }
-    console.log('Login successful');
-
-    const another_response = await fetch('http://127.0.0.1:5000/api/auth/user', {
-      credentials: 'include',
-    });
-    console.log(await another_response.json());
   } catch (error) {
-    console.error(error);
-    errorMessage.value = 'Unable to contact server';
+    errorMessage.value = error.message;
   }
 }
 </script>
 
 <template>
-  <div class="container mt-5">
-    <div class="row justify-content-center">
-      <div class="col-md-4">
-        <h2 class="mb-4">Login</h2>
+  <form @submit.prevent="login">
+    <div class="container mt-5">
+      <div class="row justify-content-center">
+        <div class="col-md-5 col-lg-5">
+          <div class="card shadow-lg">
+            <div class="card-body p-5">
+              <h1 class="card-title text-center mb-3">Login to Placement Portal</h1>
 
-        <div class="mb-3">
-          <input v-model.lazy="email" class="form-control" placeholder="Email" />
+              <div class="mb-3">
+                <input v-model="email" class="form-control" placeholder="Email" required />
+              </div>
+
+              <div class="mb-3">
+                <input
+                  v-model="password"
+                  type="password"
+                  class="form-control"
+                  placeholder="Password"
+                  required
+                />
+              </div>
+
+              <div v-if="errorMessage" class="alert alert-danger">
+                {{ errorMessage }}
+              </div>
+
+              <button class="btn btn-primary mt-3" @click="login">Login</button>
+
+              <div class="mt-3">
+                Don't have an account?<router-link to="/register"> Sign up </router-link>
+              </div>
+            </div>
+          </div>
         </div>
-
-        <div class="mb-3">
-          <input
-            v-model.lazy="password"
-            type="password"
-            class="form-control"
-            placeholder="Password"
-          />
-        </div>
-
-        <div v-if="errorMessage" class="alert alert-danger">
-          {{ errorMessage }}
-        </div>
-
-        <button class="btn btn-primary" @click="login">Login</button>
       </div>
     </div>
-  </div>
+  </form>
 </template>

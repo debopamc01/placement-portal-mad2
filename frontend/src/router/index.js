@@ -1,6 +1,8 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router';
 
-import LoginView from '@/views/LoginView.vue'
+import LoginView from '@/views/LoginView.vue';
+import AdminDashboard from '@/views/AdminDashboard.vue';
+import RegisterView from '@/views/RegisterView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -16,7 +18,18 @@ const router = createRouter({
       name: 'login',
       component: LoginView,
     },
-  ],
-})
 
-export default router
+    {
+      path: '/admin',
+      name: 'admin',
+      component: AdminDashboard,
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: RegisterView,
+    },
+  ],
+});
+
+export default router;
