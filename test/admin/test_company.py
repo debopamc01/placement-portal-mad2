@@ -1,4 +1,5 @@
 from datetime import datetime
+from http import HTTPStatus
 
 from config import ADMIN_EMAIL, ADMIN_PASSWORD
 
@@ -257,3 +258,44 @@ def test_get_placement_drives(client):
     placement_drives = response.get_json().get("data").get("placement_drives")
     assert len(placement_drives) == 2
     assert placement_drives[0].get("company_id") == company_id
+
+
+def test_get_companies_success(client):
+    # Register a company
+    response = client.post(
+        "/api/auth/register/company",
+        json={
+            "name": "Acme",
+            "email": "hr@acme.com",
+            "password": "Password123",
+        },
+    )
+    assert response.status_code == HTTPStatus.CREATED
+
+    # Register another company
+    response = client.post(
+        "/api/auth/register/company",
+        json={
+            "name": "Acme2",
+            "email": "hr@acme2.com",
+            "password": "Password123",
+        },
+    )
+    assert response.status_code == 201
+
+    # Login as admin
+    client.post(
+        "/api/auth/login",
+        json={
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD,
+        },
+    )
+
+    response = client.get("/api/admin/companies")
+
+    assert response.status_code == HTTPStatus.OK
+
+    data = response.get_json()
+
+    assert len(data["data"]["companies"]) == 2

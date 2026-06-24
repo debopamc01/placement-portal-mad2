@@ -183,3 +183,21 @@ def get_placement_drives():
         )
     except Exception as e:
         return error_response(errors=str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR)
+
+
+@admin_bp.get("/companies")
+@login_required
+@role_required(UserRole.ADMIN)
+def get_companies():
+    companies:Sequence[Company] = db.session.scalars(
+        db.select(Company)
+    ).all()
+
+    return success_response(
+        data={
+            "companies": [
+                company.to_dict()
+                for company in companies
+            ]
+        }
+    )

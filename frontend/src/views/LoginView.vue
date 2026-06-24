@@ -9,14 +9,18 @@ const authStore = useAuthStore();
 const email = ref('');
 const password = ref('');
 const errorMessage = ref('');
+const loading = ref(false);
 
 async function login() {
   errorMessage.value = '';
+  loading.value = true;
 
   try {
     await authStore.login(email.value, password.value);
 
     const role = authStore.user.role;
+
+    // TODO:If authenticated user tries to login, show dashboard
 
     if (role === 'admin') {
       router.push('/admin');
@@ -27,6 +31,8 @@ async function login() {
     }
   } catch (error) {
     errorMessage.value = error.message;
+  } finally {
+    loading.value = false;
   }
 }
 </script>
@@ -34,17 +40,24 @@ async function login() {
 <template>
   <form @submit.prevent="login">
     <div class="container mt-5">
+      <h1 class="card-title text-center mb-3">Login to Placement Portal</h1>
       <div class="row justify-content-center">
-        <div class="col-md-5 col-lg-5">
+        <div class="col-12 col-sm-10 col-md-6 col-lg-4">
           <div class="card shadow-lg">
             <div class="card-body p-5">
-              <h1 class="card-title text-center mb-3">Login to Placement Portal</h1>
-
               <div class="mb-3">
-                <input v-model="email" class="form-control" placeholder="Email" required />
+                <label class="form-label">Email Address</label>
+                <input
+                  v-model="email"
+                  type="email"
+                  class="form-control"
+                  placeholder="Email"
+                  required
+                />
               </div>
 
               <div class="mb-3">
+                <label class="form-label">Password</label>
                 <input
                   v-model="password"
                   type="password"
@@ -58,10 +71,14 @@ async function login() {
                 {{ errorMessage }}
               </div>
 
-              <button class="btn btn-primary mt-3" @click="login">Login</button>
+              <button class="btn btn-primary mt-3" type="submit" :disabled="loading">
+                {{ loading ? 'Logging in...' : 'Login' }}
+              </button>
 
               <div class="mt-3">
-                Don't have an account?<router-link to="/register"> Sign up </router-link>
+                Don't have an account?<router-link to="/register" class="fw-bold">
+                  Register</router-link
+                >
               </div>
             </div>
           </div>
