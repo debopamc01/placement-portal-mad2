@@ -3,8 +3,8 @@ import os
 from flask.testing import FlaskClient
 import pytest
 
-from backend import create_backend_app
-from backend.extensions import db
+from backend_app import create_backend_app
+from backend_app.extensions import db
 
 
 @pytest.fixture

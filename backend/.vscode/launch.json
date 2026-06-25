@@ -5,7 +5,7 @@
             "name": "Flask Backend",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/main.py",
+            "program": "${workspaceFolder}/backend/main.py",
             "console": "integratedTerminal"
         },
         {

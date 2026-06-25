@@ -5,12 +5,12 @@ from sqlalchemy.orm import Mapped, relationship, mapped_column
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
-from backend.extensions import db
-from backend.models.model_enums import PlacementDriveStatus
+from backend_app.extensions import db
+from backend_app.models.model_enums import PlacementDriveStatus
 
 if TYPE_CHECKING:
-    from backend.models.company import Company
-    from backend.models.job_application import JobApplication
+    from backend_app.models.company import Company
+    from backend_app.models.job_application import JobApplication
 
 
 class PlacementDrive(db.Model):

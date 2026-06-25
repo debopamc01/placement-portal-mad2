@@ -1,5 +1,5 @@
-from backend.models.user import User
-from backend.extensions import db
+from backend_app.models.user import User
+from backend_app.extensions import db
 
 
 def delete_from_db(user_id: int) -> bool:

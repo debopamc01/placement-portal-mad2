@@ -3,12 +3,12 @@ from __future__ import annotations
 from sqlalchemy.orm import Mapped, relationship, mapped_column
 from typing import TYPE_CHECKING, Optional
 
-from backend.extensions import db
-from backend.models.model_enums import CompanyApprovalStatus
+from backend_app.extensions import db
+from backend_app.models.model_enums import CompanyApprovalStatus
 
 if TYPE_CHECKING:
-    from backend.models.placement_drive import PlacementDrive
-    from backend.models.user import User
+    from backend_app.models.placement_drive import PlacementDrive
+    from backend_app.models.user import User
 
 
 class Company(db.Model):

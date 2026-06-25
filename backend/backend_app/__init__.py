@@ -4,17 +4,17 @@ from flask import Flask
 from flask_cors import CORS
 
 from config import BASE_DIR, Config, ADMIN_EMAIL, ADMIN_PASSWORD
-from backend.models.model_enums import UserRole
-from backend.extensions import db, login_manager
-from backend.routes.auth import auth_bp
-from backend.routes.frontend import frontend_bp
-from backend.routes.admin import admin_bp
-from backend.routes.company import company_bp
-from backend.models.company import Company
-from backend.models.job_application import JobApplication
-from backend.models.placement_drive import PlacementDrive
-from backend.models.student import Student
-from backend.models.user import User
+from backend_app.models.model_enums import UserRole
+from backend_app.extensions import db, login_manager
+from backend_app.routes.auth import auth_bp
+from backend_app.routes.frontend import frontend_bp
+from backend_app.routes.admin import admin_bp
+from backend_app.routes.company import company_bp
+from backend_app.models.company import Company
+from backend_app.models.job_application import JobApplication
+from backend_app.models.placement_drive import PlacementDrive
+from backend_app.models.student import Student
+from backend_app.models.user import User
 
 
 def create_admin() -> None:
@@ -29,11 +29,8 @@ def create_admin() -> None:
 
 
 def create_backend_app():
-    # Get the parent directory (project root) to locate templates folder
-    template_dir = os.path.abspath(os.path.join(BASE_DIR, "backend", "templates"))
-    static_dir = os.path.abspath(os.path.join(BASE_DIR, "backend", "static"))
-    os.makedirs(os.path.join(BASE_DIR, "backend", "instance"), exist_ok=True)
-    app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
+    os.makedirs(os.path.join(BASE_DIR, "backend_app", "instance"), exist_ok=True)
+    app = Flask(__name__)
 
     CORS(
         app,

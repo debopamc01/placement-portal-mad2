@@ -5,16 +5,16 @@ from zoneinfo import ZoneInfo
 from flask import Blueprint, request
 from flask_login import current_user, login_required
 
-from backend.models.model_enums import (
+from backend_app.models.model_enums import (
     CompanyApprovalStatus,
     JobApplicationStatus,
     PlacementDriveStatus,
     UserRole,
 )
-from backend.models.placement_drive import PlacementDrive
-from backend.utils.decorators import role_required
-from backend.utils.responses import error_response, success_response
-from backend.extensions import db
+from backend_app.models.placement_drive import PlacementDrive
+from backend_app.utils.decorators import role_required
+from backend_app.utils.responses import error_response, success_response
+from backend_app.extensions import db
 
 company_bp = Blueprint("company", __name__, url_prefix="/api/company")
 

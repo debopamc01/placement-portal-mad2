@@ -1,4 +1,4 @@
-from backend import create_backend_app
+from backend_app import create_backend_app
 
 def main():
     app = create_backend_app()
