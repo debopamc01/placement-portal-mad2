@@ -18,7 +18,7 @@ async function loadCompanies() {
   errorMessage.value = '';
 
   try {
-    const response = await fetch('http://127.0.0.1:5000/api/admin/companies', {
+    const response = await fetch('/api/admin/companies', {
       credentials: 'include',
     });
 
@@ -41,7 +41,7 @@ async function modify_company(companyId, action) {
     console.log(`Action should be one of ${actions}, but is ${action}`);
     return;
   }
-  const url = `http://127.0.0.1:5000/api/admin/company/${companyId}/${action}`;
+  const url = `/api/admin/company/${companyId}/${action}`;
 
   try {
     const response = await fetch(url, { method: 'POST', credentials: 'include' });

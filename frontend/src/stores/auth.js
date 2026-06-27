@@ -8,7 +8,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function loadUser() {
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/auth/user', {
+      const response = await fetch('/api/auth/user', {
         credentials: 'include',
       });
 
@@ -25,7 +25,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function login(email, password) {
-    const response = await fetch('http://127.0.0.1:5000/api/auth/login', {
+    const response = await fetch('/api/auth/login', {
       method: 'POST',
       credentials: 'include',
       headers: {
@@ -47,7 +47,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function logout() {
-    await fetch('http://127.0.0.1:5000/api/auth/logout', {
+    await fetch('/api/auth/logout', {
       method: 'POST',
       credentials: 'include',
     });

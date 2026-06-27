@@ -30,7 +30,7 @@ async function register() {
     let payload = {};
 
     if (role.value === 'student') {
-      url = 'http://127.0.0.1:5000/api/auth/register/student';
+      url = '/api/auth/register/student';
 
       payload = {
         name: name.value,
@@ -39,7 +39,7 @@ async function register() {
         description: description.value,
       };
     } else {
-      url = 'http://127.0.0.1:5000/api/auth/register/company';
+      url = '/api/auth/register/company';
 
       payload = {
         name: name.value,
@@ -52,6 +52,7 @@ async function register() {
 
     const response = await fetch(url, {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },

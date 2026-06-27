@@ -73,7 +73,7 @@ def get_placement_drives():
             errors="Company is not yet approved", status=HTTPStatus.FORBIDDEN
         )
 
-    placement_drives = current_user.company.placement_drives
+    placement_drives: list[PlacementDrive] = current_user.company.placement_drives
     return success_response(
         data={"placement_drives": [drive.to_dict() for drive in placement_drives]}
     )
