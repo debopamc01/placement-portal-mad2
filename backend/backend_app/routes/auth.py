@@ -194,7 +194,7 @@ def register_company():
     password = data.get("password")
     hr_contact = data.get("hr_contact")
     website: str = data.get("website")
-    if not website.startswith("http"):
+    if website and not website.startswith("http"):
         website = "http://" + website
 
     if not company_name or not email or not password:
