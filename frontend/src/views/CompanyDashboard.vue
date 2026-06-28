@@ -7,8 +7,10 @@ const router = useRouter();
 const authStore = useAuthStore();
 
 const errorMessage = ref('');
-const placementDrives = ref([]);
+const successMessage = ref('');
+const loading = ref(false);
 
+const placementDrives = ref([]);
 const jobTitle = ref('');
 const jobDescription = ref('');
 const eligibilityCriteria = ref('');
@@ -39,9 +41,9 @@ async function loadPlacementDrives() {
   }
 }
 async function createPlacementDrive() {
-  let payload = {};
+  loading.value = true;
   try {
-    payload = {
+    const payload = {
       job_title: jobTitle.value,
       description: jobDescription.value,
       eligibility_criteria: eligibilityCriteria.value,
@@ -65,10 +67,30 @@ async function createPlacementDrive() {
     const newDrive = data.data.placement_drive;
 
     placementDrives.value.push(newDrive);
+    successMessage.value = 'Placement drive created successfully';
+
+    const closeButton = document.querySelector(
+      '#createPlacementDriveModal [data-bs-dismiss="modal"]',
+    );
+
+    setTimeout(() => {
+      closeButton.click();
+    }, 1000);
   } catch (error) {
     console.error(error);
     errorMessage.value = 'Unable to create placement drive';
+  } finally {
+    loading.value = false;
   }
+}
+function resetForm() {
+  jobTitle.value = '';
+  jobDescription.value = '';
+  eligibilityCriteria.value = '';
+  applicationDeadline.value = '';
+
+  errorMessage.value = '';
+  successMessage.value = '';
 }
 async function closePlacementDrive() {}
 async function reopenPlacementDrive() {}
@@ -76,6 +98,12 @@ async function editPlacementDrive() {}
 async function deletePlacementDrive() {}
 onMounted(() => {
   loadPlacementDrives();
+
+  const modalElement = document.getElementById('createPlacementDriveModal');
+
+  modalElement.addEventListener('hidden.bs.modal', () => {
+    resetForm();
+  });
 });
 </script>
 
@@ -196,6 +224,13 @@ onMounted(() => {
               </div>
 
               <div class="modal-body">
+                <div v-if="successMessage" class="alert alert-success">
+                  {{ successMessage }}
+                </div>
+
+                <div v-if="errorMessage" class="alert alert-danger">
+                  {{ errorMessage }}
+                </div>
                 <!-- Job Title -->
 
                 <div class="mb-3">
@@ -245,11 +280,20 @@ onMounted(() => {
               </div>
 
               <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                  Cancel
-                </button>
+                <div>
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                    :disabled="loading"
+                  >
+                    Cancel
+                  </button>
 
-                <button class="btn btn-primary" type="submit">Create</button>
+                  <button class="btn btn-primary" type="submit" :disabled="loading">
+                    {{ loading ? 'Creating...' : 'Create' }}
+                  </button>
+                </div>
               </div>
             </form>
           </div>
