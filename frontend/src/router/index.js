@@ -4,6 +4,7 @@ import LoginView from '@/views/LoginView.vue';
 import AdminDashboard from '@/views/AdminDashboard.vue';
 import RegisterView from '@/views/RegisterView.vue';
 import CompanyDashboard from '@/views/CompanyDashboard.vue';
+import StudentDashboard from '@/views/StudentDashboard.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -34,6 +35,11 @@ const router = createRouter({
       path: '/company',
       name: 'company',
       component: CompanyDashboard,
+    },
+    {
+      path: '/student',
+      name: 'student',
+      component: StudentDashboard,
     },
   ],
 });

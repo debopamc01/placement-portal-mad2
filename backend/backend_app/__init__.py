@@ -9,6 +9,7 @@ from backend_app.extensions import db, login_manager
 from backend_app.routes.auth import auth_bp
 from backend_app.routes.frontend import frontend_bp
 from backend_app.routes.admin import admin_bp
+from backend_app.routes.student import student_bp
 from backend_app.routes.company import company_bp
 from backend_app.models.company import Company
 from backend_app.models.job_application import JobApplication
@@ -46,6 +47,7 @@ def create_backend_app():
     app.register_blueprint(frontend_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(company_bp)
+    app.register_blueprint(student_bp)
     with app.app_context():
         db.create_all()
         create_admin()
