@@ -136,7 +136,11 @@ async function register() {
 
               <div v-if="role === 'student'" class="mb-3">
                 <label class="form-label">Description</label>
-                <textarea v-model="description" class="form-control" placeholder="Description" />
+                <textarea
+                  v-model="description"
+                  class="form-control"
+                  placeholder="Description"
+                ></textarea>
               </div>
 
               <template v-else>
