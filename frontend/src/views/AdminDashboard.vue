@@ -2,12 +2,14 @@
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
+import PlacementDriveTable from '@/components/PlacementDriveTable.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
 
 const companies = ref([]);
 const errorMessage = ref('');
+const placementDrives = ref([]);
 
 async function logout() {
   await authStore.logout();
@@ -60,8 +62,56 @@ async function modify_company(companyId, action) {
     errorMessage.value = `Unable to ${action} company`;
   }
 }
+async function loadPlacementDrives() {
+  errorMessage.value = '';
+  try {
+    const response = await fetch('/api/admin/placement-drives', {
+      credentials: 'include',
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      errorMessage.value = data.errors;
+      return;
+    }
+
+    placementDrives.value = data.data.placement_drives;
+  } catch (error) {
+    console.error(error);
+    errorMessage.value = 'Unable to load placement drives';
+  }
+}
+async function modifyPlacementDriveStatus(placementDriveId, action) {
+  const actions = ['approve', 'decline'];
+  // TODO: Add close action
+  if (actions.indexOf(action) === -1) {
+    console.error(`Action should be one of ${actions}, but is ${action}`);
+    return;
+  }
+
+  const url = `/api/admin/placement-drives/${placementDriveId}/${action}`;
+  try {
+    const response = await fetch(url, { method: 'POST', credentials: 'include' });
+    const data = await response.json();
+    if (!response.ok) {
+      errorMessage.value = data.errors;
+      return;
+    }
+    const placementDrive = placementDrives.value.find(
+      (placementDrive) => placementDrive.id === placementDriveId,
+    );
+
+    if (placementDrive) {
+      placementDrive.status = data.data.status;
+    }
+  } catch (error) {
+    console.error(error);
+    errorMessage.value = `Unable to ${action} placement drive`;
+  }
+}
 onMounted(() => {
   loadCompanies();
+  loadPlacementDrives();
 });
 </script>
 
@@ -171,6 +221,19 @@ onMounted(() => {
           </tr>
         </tbody>
       </table>
+    </div>
+    <div class="mt-5">
+      <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0"><i class="fas fa-briefcase"></i> Placement Drives</h5>
+        </div>
+        <PlacementDriveTable
+          :placement-drives="placementDrives"
+          :show-company="true"
+          @approve="(placementDriveId) => modifyPlacementDriveStatus(placementDriveId, 'approve')"
+          @decline="(placementDriveId) => modifyPlacementDriveStatus(placementDriveId, 'decline')"
+        />
+      </div>
     </div>
   </div>
 </template>

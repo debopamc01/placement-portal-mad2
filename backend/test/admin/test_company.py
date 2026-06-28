@@ -197,7 +197,7 @@ def test_get_placement_drives(client):
 
     assert response.status_code == 201
     data = response.get_json().get("data").get("placement_drive")
-    expected_company_id = data.get("company_id")
+    expected_company_id = data.get("company").get("id")
 
     assert expected_company_id == company_id
 
@@ -219,7 +219,7 @@ def test_get_placement_drives(client):
 
     assert response.status_code == 201
     data = response.get_json().get("data").get("placement_drive")
-    expected_company_id = data.get("company_id")
+    expected_company_id = data.get("company").get("id")
 
     assert expected_company_id == company_id
 
@@ -250,14 +250,14 @@ def test_get_placement_drives(client):
     assert response.status_code == 200
     placement_drives = response.get_json().get("data").get("placement_drives")
     assert len(placement_drives) == 2
-    assert placement_drives[0].get("company_id") == company_id
+    assert placement_drives[0].get("company").get("id") == company_id
 
     # Get placement drives by status
     response = client.get("/api/admin/placement-drives?status=pending")
     assert response.status_code == 200
     placement_drives = response.get_json().get("data").get("placement_drives")
     assert len(placement_drives) == 2
-    assert placement_drives[0].get("company_id") == company_id
+    assert placement_drives[0].get("company").get("id") == company_id
 
 
 def test_get_companies_success(client):

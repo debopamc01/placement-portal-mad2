@@ -49,5 +49,5 @@ class PlacementDrive(db.Model):
                 else None
             ),
             "application_ids": [application.id for application in self.applications],
-            "company_id": self.company.id,
+            "company": self.company.to_dict(),
         }

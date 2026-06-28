@@ -113,6 +113,6 @@ def test_create_placement_drive(client):
 
     assert response.status_code == 201
     data = response.get_json().get("data").get("placement_drive")
-    expected_company_id = data.get("company_id")
+    expected_company_id = data.get("company").get("id")
 
     assert expected_company_id == company_id

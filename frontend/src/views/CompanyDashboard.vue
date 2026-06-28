@@ -1,7 +1,8 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { useAuthStore } from '../stores/auth';
+import { useAuthStore } from '@/stores/auth';
+import PlacementDriveTable from '@/components/PlacementDriveTable.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -138,73 +139,13 @@ onMounted(() => {
           <i class="fas fa-plus"></i> Create New Drive
         </button>
       </div>
-      <table class="table table-striped table-hover">
-        <thead>
-          <tr>
-            <th>Job Title</th>
-            <th>Application Deadline</th>
-            <th>Status</th>
-            <th>Applications</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          <tr v-for="placementDrive in placementDrives" :key="placementDrive.id">
-            <td>{{ placementDrive.job_title }}</td>
-            <td>{{ placementDrive.application_deadline }}</td>
-            <td style="text-transform: uppercase">
-              <span
-                class="badge"
-                :class="{
-                  'bg-danger': placementDrive.status === 'declined',
-                  'bg-secondary': placementDrive.status === 'pending',
-                  'bg-success': placementDrive.status === 'active',
-                  'bg-success': placementDrive.status === 'closed',
-                }"
-              >
-                {{ placementDrive.status }}
-              </span>
-            </td>
-            <td>{{ placementDrive.application_ids.length }}</td>
-            <td>
-              <button
-                class="btn btn-sm btn-light dropdown-toggle"
-                type="button"
-                aria-expanded="false"
-                data-bs-toggle="dropdown"
-              >
-                Actions
-              </button>
-              <ul class="dropdown-menu">
-                <li>
-                  <button class="dropdown-item">View Details</button>
-                </li>
-                <li v-if="placementDrive.status !== 'closed'">
-                  <button class="dropdown-item text-success" @click="closePlacementDrive()">
-                    Close
-                  </button>
-                </li>
-                <li v-if="placementDrive.status === 'closed'">
-                  <button class="dropdown-item text-success" @click="reopenPlacementDrive()">
-                    Reopen
-                  </button>
-                </li>
-                <li>
-                  <button class="dropdown-item text-primary" @click="editPlacementDrive()">
-                    Edit
-                  </button>
-                </li>
-                <li>
-                  <button class="dropdown-item text-danger" @click="deletePlacementDrive()">
-                    Delete
-                  </button>
-                </li>
-              </ul>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <PlacementDriveTable
+        :placement-drives="placementDrives"
+        @close="closePlacementDrive"
+        @reopen="reopenPlacementDrive"
+        @edit="editPlacementDrive"
+        @delete="deletePlacementDrive"
+      />
       <div
         class="modal fade"
         id="createPlacementDriveModal"
