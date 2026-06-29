@@ -1,9 +1,11 @@
 <script setup>
 import { onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 
 import PlacementDriveTable from '@/components/PlacementDriveTable.vue';
 
+const router = useRouter();
 const authStore = useAuthStore();
 
 const errorMessage = ref('');
@@ -34,6 +36,29 @@ async function loadPlacementDrives() {
     errorMessage.value = 'Unable to load placement drives';
   }
 }
+async function applyToPlacementDrive(placementDriveId) {
+  errorMessage.value = '';
+  try {
+    const url = '/api/student/applications';
+    const response = await fetch(url, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ placement_drive_id: placementDriveId }),
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      errorMessage.value = "Unable to apply to the placement drive";
+      return;
+    }
+  } catch (error) {
+    errorMessage.value = error;
+    console.log(error);
+  }
+}
 onMounted(() => {
   loadPlacementDrives();
 });
@@ -58,5 +83,6 @@ onMounted(() => {
         {{ authStore.user.role }}
       </p>
     </div>
+    <PlacementDriveTable :placement-drives="placementDrives" :actions="['view','apply']" @apply="applyToPlacementDrive" />
   </div>
 </template>

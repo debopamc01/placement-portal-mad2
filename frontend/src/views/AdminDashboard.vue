@@ -229,6 +229,7 @@ onMounted(() => {
         </div>
         <PlacementDriveTable
           :placement-drives="placementDrives"
+          :actions="['approve', 'decline', 'close', 'reopen', 'edit', 'delete', 'view']"
           :show-company="true"
           @approve="(placementDriveId) => modifyPlacementDriveStatus(placementDriveId, 'approve')"
           @decline="(placementDriveId) => modifyPlacementDriveStatus(placementDriveId, 'decline')"

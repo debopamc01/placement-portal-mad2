@@ -5,13 +5,27 @@ defineProps({
     required: true,
   },
 
+  actions: {
+    type: Array,
+    required: true,
+  },
+
   showCompany: {
     type: Boolean,
     default: false,
   },
 });
 
-const emit = defineEmits(['approve', 'decline', 'close', 'reopen', 'edit', 'delete', 'view']);
+const emit = defineEmits([
+  'approve',
+  'decline',
+  'close',
+  'reopen',
+  'edit',
+  'delete',
+  'view',
+  'apply',
+]);
 
 function statusClass(status) {
   switch (status) {
@@ -61,6 +75,7 @@ function statusClass(status) {
             {{ placementDrive.status }}
           </span>
         </td>
+        <!--- TODO: Make the above and the below fields dynamic-->
 
         <td>{{ placementDrive.application_ids.length }}</td>
 
@@ -80,7 +95,7 @@ function statusClass(status) {
                 View Details
               </button>
             </li>
-            <li v-if="placementDrive.status !== 'active'">
+            <li v-if="placementDrive.status !== 'active' && actions.indexOf('approve') != -1">
               <button
                 class="dropdown-item text-success"
                 @click="emit('approve', placementDrive.id)"
@@ -89,33 +104,38 @@ function statusClass(status) {
               </button>
             </li>
 
-            <li v-if="placementDrive.status !== 'declined'">
+            <li v-if="placementDrive.status !== 'declined' && actions.indexOf('decline') != -1">
               <button class="dropdown-item text-danger" @click="emit('decline', placementDrive.id)">
                 Decline
               </button>
             </li>
 
-            <li v-if="placementDrive.status !== 'closed'">
+            <li v-if="placementDrive.status !== 'closed' && actions.indexOf('close') != -1">
               <button class="dropdown-item text-warning" @click="emit('close', placementDrive.id)">
                 Close
               </button>
             </li>
 
-            <li v-if="placementDrive.status === 'closed'">
+            <li v-if="placementDrive.status === 'closed' && actions.indexOf('reopen') != -1">
               <button class="dropdown-item text-success" @click="emit('reopen', placementDrive.id)">
                 Reopen
               </button>
             </li>
 
-            <li v-if="placementDrive.status !== 'closed'">
+            <li v-if="placementDrive.status !== 'closed' && actions.indexOf('edit') != -1">
               <button class="dropdown-item text-primary" @click="emit('edit', placementDrive.id)">
                 Edit
               </button>
             </li>
 
-            <li>
+            <li v-if="actions.indexOf('delete') != -1">
               <button class="dropdown-item text-danger" @click="emit('delete', placementDrive.id)">
                 Delete
+              </button>
+            </li>
+            <li v-if="actions.indexOf('apply') != -1">
+              <button class="dropdown-item btn-primary" @click="emit('apply', placementDrive.id)">
+                Apply
               </button>
             </li>
           </ul>

@@ -141,6 +141,7 @@ onMounted(() => {
       </div>
       <PlacementDriveTable
         :placement-drives="placementDrives"
+        :actions="['close', 'reopen', 'edit', 'delete', 'view']"
         @close="closePlacementDrive"
         @reopen="reopenPlacementDrive"
         @edit="editPlacementDrive"
