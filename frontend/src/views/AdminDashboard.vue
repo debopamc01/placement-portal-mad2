@@ -56,6 +56,7 @@ async function modify_company(companyId, action) {
 
     if (company) {
       company.approval_status = data.data.status;
+      loadPlacementDrives();
     }
   } catch (error) {
     console.error(error);
@@ -110,6 +111,7 @@ async function modifyPlacementDriveStatus(placementDriveId, action) {
   }
 }
 onMounted(() => {
+  authStore.loadUser();
   loadCompanies();
   loadPlacementDrives();
 });

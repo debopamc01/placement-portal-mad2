@@ -51,8 +51,16 @@ async function applyToPlacementDrive(placementDriveId) {
     const data = await response.json();
 
     if (!response.ok) {
-      errorMessage.value = "Unable to apply to the placement drive";
+      errorMessage.value = 'Unable to apply to the placement drive';
       return;
+    }
+
+    const placementDrive = placementDrives.value.find(
+      (placementDrive) => placementDrive.id === placementDriveId,
+    );
+    if (placementDrive) {
+      placementDrive.has_applied = true;
+      placementDrive.application_status = data.data.JobApplication.status;
     }
   } catch (error) {
     errorMessage.value = error;
@@ -60,6 +68,7 @@ async function applyToPlacementDrive(placementDriveId) {
   }
 }
 onMounted(() => {
+  authStore.loadUser();
   loadPlacementDrives();
 });
 </script>
@@ -83,6 +92,13 @@ onMounted(() => {
         {{ authStore.user.role }}
       </p>
     </div>
-    <PlacementDriveTable :placement-drives="placementDrives" :actions="['view','apply']" @apply="applyToPlacementDrive" />
+    <PlacementDriveTable
+      :placement-drives="placementDrives"
+      :show-application-status="true"
+      :show-placement-drive-status="false"
+      :show-company="true"
+      :actions="['view', 'apply']"
+      @apply="applyToPlacementDrive"
+    />
   </div>
 </template>

@@ -98,6 +98,7 @@ async function reopenPlacementDrive() {}
 async function editPlacementDrive() {}
 async function deletePlacementDrive() {}
 onMounted(() => {
+  authStore.loadUser();
   loadPlacementDrives();
 
   const modalElement = document.getElementById('createPlacementDriveModal');

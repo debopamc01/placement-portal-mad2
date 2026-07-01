@@ -14,6 +14,16 @@ defineProps({
     type: Boolean,
     default: false,
   },
+
+  showApplicationStatus: {
+    type: Boolean,
+    default: false,
+  },
+
+  showPlacementDriveStatus: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 const emit = defineEmits([
@@ -27,7 +37,7 @@ const emit = defineEmits([
   'apply',
 ]);
 
-function statusClass(status) {
+function placementDriveStatusClass(status) {
   switch (status) {
     case 'pending':
       return 'bg-secondary';
@@ -45,6 +55,25 @@ function statusClass(status) {
       return 'bg-light text-dark';
   }
 }
+
+function jobApplicationStatusClass(status) {
+  switch (status) {
+    case 'applied':
+      return 'bg-primary';
+
+    case 'shortlisted':
+      return 'bg-warning text-dark';
+
+    case 'selected':
+      return 'bg-success';
+
+    case 'rejected':
+      return 'bg-danger';
+
+    default:
+      return 'bg-secondary';
+  }
+}
 </script>
 
 <template>
@@ -54,8 +83,9 @@ function statusClass(status) {
         <th v-if="showCompany">Company</th>
         <th>Job Title</th>
         <th>Application Deadline</th>
-        <th>Status</th>
-        <th>Applications</th>
+        <th v-if="showPlacementDriveStatus">Status</th>
+        <th v-if="!showApplicationStatus">Applications</th>
+        <th v-if="showApplicationStatus">Application Status</th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -70,14 +100,25 @@ function statusClass(status) {
 
         <td>{{ placementDrive.application_deadline }}</td>
 
-        <td style="text-transform: uppercase">
-          <span class="badge" :class="statusClass(placementDrive.status)">
+        <td v-if="showPlacementDriveStatus" style="text-transform: uppercase">
+          <span class="badge" :class="placementDriveStatusClass(placementDrive.status)">
             {{ placementDrive.status }}
           </span>
         </td>
         <!--- TODO: Make the above and the below fields dynamic-->
 
-        <td>{{ placementDrive.application_ids.length }}</td>
+        <td v-if="!showApplicationStatus">{{ placementDrive.application_ids.length }}</td>
+
+        <td v-if="showApplicationStatus" style="text-transform: uppercase">
+          <span
+            v-if="placementDrive.has_applied"
+            class="badge"
+            :class="jobApplicationStatusClass(placementDrive.application_status)"
+          >
+            {{ placementDrive.application_status }}
+          </span>
+          <span v-else class="badge bg-secondary">Not Applied</span>
+        </td>
 
         <td>
           <button
@@ -133,7 +174,7 @@ function statusClass(status) {
                 Delete
               </button>
             </li>
-            <li v-if="actions.indexOf('apply') != -1">
+            <li v-if="actions.indexOf('apply') != -1 && !placementDrive.has_applied">
               <button class="dropdown-item btn-primary" @click="emit('apply', placementDrive.id)">
                 Apply
               </button>

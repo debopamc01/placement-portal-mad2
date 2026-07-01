@@ -81,7 +81,18 @@ def get_active_placement_drives():
             PlacementDrive.status == PlacementDriveStatus.ACTIVE
         )
     ).all()
-    # TODO: Add logic for getting placement drives that have not been applied for, yet
-    return success_response(
-        data={"placement_drives": [d.to_dict() for d in active_placement_drives]}
-    )
+    active_placement_drives_dicts = []
+    for placement_drive in active_placement_drives:
+        application: JobApplication | None = db.session.scalar(
+            db.select(JobApplication).where(
+                JobApplication.student_id == current_user.student.id,
+                JobApplication.placement_drive_id == placement_drive.id,
+            )
+        )
+        has_applied = application is not None
+        application_status = application.status if has_applied else None
+        placement_drive_dict = placement_drive.to_dict()
+        placement_drive_dict["has_applied"] = has_applied
+        placement_drive_dict["application_status"] = application_status
+        active_placement_drives_dicts.append(placement_drive_dict)
+    return success_response(data={"placement_drives": active_placement_drives_dicts})
