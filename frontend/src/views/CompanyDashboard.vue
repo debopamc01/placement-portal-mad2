@@ -97,6 +97,11 @@ async function closePlacementDrive() {}
 async function reopenPlacementDrive() {}
 async function editPlacementDrive() {}
 async function deletePlacementDrive() {}
+async function viewPlacementDrive(placementDriveId) {
+  router.push({
+    path: `/placement-drive/${placementDriveId}`,
+  });
+}
 onMounted(() => {
   authStore.loadUser();
   loadPlacementDrives();
@@ -147,6 +152,7 @@ onMounted(() => {
         @reopen="reopenPlacementDrive"
         @edit="editPlacementDrive"
         @delete="deletePlacementDrive"
+        @view="viewPlacementDrive"
       />
       <div
         class="modal fade"

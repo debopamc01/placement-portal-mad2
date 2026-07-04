@@ -5,6 +5,7 @@ from zoneinfo import ZoneInfo
 from flask import Blueprint, request
 from flask_login import current_user, login_required
 
+from backend_app.models.job_application import JobApplication
 from backend_app.models.model_enums import (
     CompanyApprovalStatus,
     JobApplicationStatus,
@@ -168,3 +169,22 @@ def update_placement_drive(drive_id: int):
     except Exception as e:
         db.session.rollback()
         return error_response(errors=str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR)
+
+
+@company_bp.get("/applications/<int:app_id>")
+@login_required
+@role_required(UserRole.COMPANY)
+def get_job_application(app_id: int):
+    application: JobApplication = db.session.scalar(
+        db.select(JobApplication).where(
+            JobApplication.id == app_id,
+            JobApplication.placement_drive.company_id == current_user.company.id,
+        )
+    )
+
+    if not application:
+        return error_response(
+            errors="No job application found with the specified id",
+            status=HTTPStatus.NOT_FOUND,
+        )
+    return success_response(data={"application": application.to_dict()})

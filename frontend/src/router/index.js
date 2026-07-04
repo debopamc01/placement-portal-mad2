@@ -5,6 +5,7 @@ import AdminDashboard from '@/views/AdminDashboard.vue';
 import RegisterView from '@/views/RegisterView.vue';
 import CompanyDashboard from '@/views/CompanyDashboard.vue';
 import StudentDashboard from '@/views/StudentDashboard.vue';
+import PlacementDriveView from '@/views/PlacementDriveView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -40,6 +41,11 @@ const router = createRouter({
       path: '/student',
       name: 'student',
       component: StudentDashboard,
+    },
+    {
+      path: '/placement-drive/:id',
+      name: 'placement-drive-view',
+      component: PlacementDriveView,
     },
   ],
 });
