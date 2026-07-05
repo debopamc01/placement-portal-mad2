@@ -22,7 +22,7 @@ admin_bp = Blueprint(name="admin", import_name=__name__, url_prefix="/api/admin"
 def modify_company_approval_status(
     company_id: int, action: CompanyApprovalAction
 ) -> tuple[Response, HTTPStatus]:
-    company = db.session.get(Company, company_id)
+    company = db.session.scalar(db.select(Company).where(Company.id == company_id))
     if not company:
         return error_response(
             errors="Company does not exist", status=HTTPStatus.NOT_FOUND
@@ -189,15 +189,8 @@ def get_placement_drives():
 @login_required
 @role_required(UserRole.ADMIN)
 def get_companies():
-    companies:Sequence[Company] = db.session.scalars(
-        db.select(Company)
-    ).all()
+    companies: Sequence[Company] = db.session.scalars(db.select(Company)).all()
 
     return success_response(
-        data={
-            "companies": [
-                company.to_dict()
-                for company in companies
-            ]
-        }
+        data={"companies": [company.to_dict() for company in companies]}
     )

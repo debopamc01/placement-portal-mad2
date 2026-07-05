@@ -3,14 +3,17 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import PlacementDriveDetails from '@/components/PlacementDriveDetails.vue';
+import ApplicationsTable from '@/components/ApplicationsTable.vue';
 
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 
 const errorMessage = ref('');
+const placementDriveId = computed(() => route.params.id);
 
 const placementDrive = ref(null);
+const applications = ref([]);
 
 const allowedActions = computed(() => {
   const role = authStore.user?.role?.toLowerCase();
@@ -47,12 +50,63 @@ async function fetchPlacementDriveDetails(placementDriveId) {
       return;
     }
     placementDrive.value = data.data.placement_drive;
-    console.log(placementDrive.value);
-  } catch (error) {}
+  } catch (error) {
+    console.error(error);
+    errorMessage.value = 'Error fetching placement drive';
+  }
+}
+
+async function fetchApplications(placementDriveId) {
+  errorMessage.value = '';
+  try {
+    const userRole = authStore.user.role.toLowerCase();
+    const url = `/api/${userRole}/placement-drives/${placementDriveId}/applications`;
+    const response = await fetch(url, {
+      credentials: 'include',
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      errorMessage.value = data.errors;
+      return;
+    }
+    applications.value = data.data.applications;
+  } catch (error) {
+    console.error(error);
+    errorMessage.value = `Error fetching applications for placement drive ${placementDriveId}`;
+  }
+}
+
+async function updateApplicationStatus(applicationId, applicationAction) {
+  if (!['shortlist', 'select', 'reject'].includes(applicationAction)) {
+    alert('Incorrect application status');
+    return;
+  }
+  errorMessage.value = '';
+  try {
+    const userRole = authStore.user.role.toLowerCase();
+    const url = `/api/${userRole}/applications/${applicationId}/${applicationAction}`;
+    const response = await fetch(url, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    const data = await response.json();
+    const application = applications.value.find((application) => application.id === applicationId);
+    if (application) {
+      application.status = data.data.application.status;
+    }
+  } catch (error) {
+    console.error(error);
+    errorMessage.value = `Unable to ${applicationAction} the application`;
+  }
 }
 onMounted(async () => {
   await authStore.loadUser();
-  await fetchPlacementDriveDetails(route.params.id);
+  await fetchPlacementDriveDetails(placementDriveId.value);
+  await fetchApplications(placementDriveId.value);
 });
 </script>
 <template>
@@ -70,4 +124,15 @@ onMounted(async () => {
   </div>
 
   <div v-else class="text-center mt-5">Loading...</div>
+
+  <h3 class="text-center mt-2">Applications</h3>
+
+  <ApplicationsTable
+    v-if="placementDrive"
+    :applications="applications"
+    :actions="['view', 'shortlist', 'select', 'reject']"
+    @shortlist="(applicationId) => updateApplicationStatus(applicationId, 'shortlist')"
+    @select="(applicationId) => updateApplicationStatus(applicationId, 'select')"
+    @reject="(applicationId) => updateApplicationStatus(applicationId, 'reject')"
+  />
 </template>

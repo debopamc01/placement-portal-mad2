@@ -34,7 +34,7 @@ class JobApplication(db.Model):
     def to_dict(self) -> dict:
         return {
             "id": self.id,
-            "student_id": self.student_id,
+            "student": self.student.to_dict() if self.student else None,
             "placement_drive_id": self.placement_drive_id,
             "application_date": (
                 self.application_date.astimezone(

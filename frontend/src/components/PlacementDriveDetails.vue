@@ -16,7 +16,7 @@ const props = defineProps({
 
   mode: {
     type: String,
-    default: 'edit',
+    default: 'view',
     // supported options: create/edit/view
   },
 
@@ -90,7 +90,7 @@ function submit() {
 
 <template>
   <form @submit.prevent="submit">
-    <div class="container py-4">
+    <div class="container py-2">
       <div class="card shadow-sm">
         <!-- Header -->
 
@@ -185,7 +185,7 @@ function submit() {
 
         <div class="card-footer">
           <div class="d-flex justify-content-end gap-2">
-            <!-- Left side -->
+            <!-- Left button -->
 
             <div class="d-flex gap-2">
               <!-- Create -->

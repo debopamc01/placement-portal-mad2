@@ -7,6 +7,7 @@ from flask_login import current_user, login_required
 
 from backend_app.models.job_application import JobApplication
 from backend_app.models.model_enums import (
+    ApplicationAction,
     CompanyApprovalStatus,
     JobApplicationStatus,
     PlacementDriveStatus,
@@ -90,7 +91,7 @@ def get_placement_drive(drive_id: int):
             errors="Company is not yet approved", status=HTTPStatus.FORBIDDEN
         )
 
-    placement_drive = db.session.scalar(
+    placement_drive: PlacementDrive | None = db.session.scalar(
         db.select(PlacementDrive).where(
             PlacementDrive.id == drive_id,
             PlacementDrive.company_id == current_user.company.id,
@@ -112,7 +113,7 @@ def update_placement_drive(drive_id: int):
             errors="Company is not yet approved", status=HTTPStatus.FORBIDDEN
         )
 
-    placement_drive = db.session.scalar(
+    placement_drive: PlacementDrive | None = db.session.scalar(
         db.select(PlacementDrive).where(
             PlacementDrive.id == drive_id,
             # Filter only those placement drives that belong to the company that is logged in
@@ -175,7 +176,7 @@ def update_placement_drive(drive_id: int):
 @login_required
 @role_required(UserRole.COMPANY)
 def get_job_application(app_id: int):
-    application: JobApplication = db.session.scalar(
+    application: JobApplication | None = db.session.scalar(
         db.select(JobApplication).where(
             JobApplication.id == app_id,
             JobApplication.placement_drive.company_id == current_user.company.id,
@@ -188,3 +189,119 @@ def get_job_application(app_id: int):
             status=HTTPStatus.NOT_FOUND,
         )
     return success_response(data={"application": application.to_dict()})
+
+
+@company_bp.get("/placement-drives/<int:placement_drive_id>/applications")
+@login_required
+@role_required(UserRole.COMPANY)
+def get_job_applications(placement_drive_id: int):
+    if current_user.company.approval_status != CompanyApprovalStatus.APPROVED:
+        return error_response(
+            errors="Company is not yet approved", status=HTTPStatus.FORBIDDEN
+        )
+
+    placement_drive: PlacementDrive | None = db.session.scalar(
+        db.select(PlacementDrive).where(
+            PlacementDrive.id == placement_drive_id,
+            PlacementDrive.company_id == current_user.company.id,
+        )
+    )
+
+    if placement_drive is None:
+        return error_response(
+            errors="No placement drive found with the specified id",
+            status=HTTPStatus.NOT_FOUND,
+        )
+
+    applications = sorted(
+        placement_drive.applications, key=lambda application: application.id
+    )
+
+    return success_response(
+        data={"applications": [app.to_dict() for app in applications]}
+    )
+
+
+def modify_job_application_status(application_id: int, action: ApplicationAction):
+    if not isinstance(action, ApplicationAction):
+        return error_response(
+            errors=f"Invalid action: {action}", status=HTTPStatus.BAD_REQUEST
+        )
+    application: JobApplication | None = db.session.scalar(
+        db.select(JobApplication).join(JobApplication.placement_drive).where(
+            JobApplication.id == application_id,
+            PlacementDrive.company_id == current_user.company.id,
+        )
+    )
+    if not application:
+        return error_response(
+            errors="No job application found with specified id",
+            status=HTTPStatus.NOT_FOUND,
+        )
+    if action == ApplicationAction.SHORTLIST:
+        application.status = JobApplicationStatus.SHORTLISTED
+    elif action == ApplicationAction.SELECT:
+        application.status = JobApplicationStatus.SELECTED
+    elif action == ApplicationAction.REJECT:
+        application.status = JobApplicationStatus.REJECTED
+    elif action == ApplicationAction.CLOSE:
+        application.status = JobApplicationStatus.CLOSED
+
+    try:
+        db.session.commit()
+        return success_response(data={"application": application.to_dict()})
+    except Exception as e:
+        db.session.rollback()
+        return error_response(errors=str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR)
+
+
+@company_bp.post("/applications/<int:application_id>/shortlist")
+@login_required
+@role_required(UserRole.COMPANY)
+def shortlist_application(application_id: int):
+    if not application_id:
+        return error_response(
+            errors="Application id not specified", status=HTTPStatus.BAD_REQUEST
+        )
+    return modify_job_application_status(
+        application_id=application_id, action=ApplicationAction.SHORTLIST
+    )
+
+
+@company_bp.post("/applications/<int:application_id>/select")
+@login_required
+@role_required(UserRole.COMPANY)
+def select_application(application_id: int):
+    if not application_id:
+        return error_response(
+            errors="Application id not specified", status=HTTPStatus.BAD_REQUEST
+        )
+    return modify_job_application_status(
+        application_id=application_id, action=ApplicationAction.SELECT
+    )
+
+
+@company_bp.post("/applications/<int:application_id>/reject")
+@login_required
+@role_required(UserRole.COMPANY)
+def reject_application(application_id: int):
+    if not application_id:
+        return error_response(
+            errors="Application id not specified", status=HTTPStatus.BAD_REQUEST
+        )
+    return modify_job_application_status(
+        application_id=application_id, action=ApplicationAction.REJECT
+    )
+
+
+@company_bp.post("/applications/<int:application_id>/close")
+@login_required
+@role_required(UserRole.COMPANY)
+def close_application(application_id: int):
+    if not application_id:
+        return error_response(
+            errors="Application id not specified", status=HTTPStatus.BAD_REQUEST
+        )
+    return modify_job_application_status(
+        application_id=application_id, action=ApplicationAction.CLOSE
+    )

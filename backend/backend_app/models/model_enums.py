@@ -33,3 +33,9 @@ class CompanyApprovalAction(StrEnum):
     APPROVE = "approve"
     REJECT = "reject"
     BLACKLIST = "blacklist"
+
+class ApplicationAction(StrEnum):
+    SHORTLIST = 'shortlist'
+    SELECT = 'select'
+    REJECT = 'reject'
+    CLOSE = 'close'

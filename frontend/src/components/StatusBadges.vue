@@ -6,24 +6,31 @@ defineProps({
   },
 });
 
-function placementDriveStatusBadgeClass(status) {
-  switch (status) {
-    case 'pending':
-      return 'bg-secondary';
-    case 'active':
-      return 'bg-success';
-    case 'declined':
-      return 'bg-danger';
-    case 'closed':
-      return 'bg-dark';
-    default:
-      return 'bg-light text-dark';
-  }
+const statusClasses = {
+  // Placement drives
+  pending: 'bg-secondary',
+  active: 'bg-success',
+  closed: 'bg-dark',
+  declined: 'bg-danger',
+
+  // Companies
+  approved: 'bg-success',
+  blacklisted: 'bg-dark',
+
+  // Applications
+  applied: 'bg-primary',
+  shortlisted: 'bg-warning text-dark',
+  selected: 'bg-success',
+  rejected: 'bg-danger',
+};
+
+function badgeClass(status) {
+  return statusClasses[status] ?? 'bg-light text-dark';
 }
 </script>
 
 <template>
-  <span class="badge fs-6" :class="placementDriveStatusBadgeClass(status)">
+  <span class="badge fs-6" :class="badgeClass(status)">
     {{ status.toUpperCase() }}
   </span>
 </template>

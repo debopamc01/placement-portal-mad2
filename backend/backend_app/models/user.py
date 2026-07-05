@@ -104,5 +104,5 @@ class User(db.Model, UserMixin):
 
 
 @login_manager.user_loader
-def load_user(user_id) -> User | None:
-    return db.session.get(User, int(user_id))
+def load_user(user_id: int) -> User | None:
+    return db.session.scalar(db.select(User).where(User.id == int(user_id)))
