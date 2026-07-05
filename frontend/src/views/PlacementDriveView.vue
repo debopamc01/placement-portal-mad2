@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import PlacementDriveDetails from '@/components/PlacementDriveDetails.vue';
@@ -12,12 +12,26 @@ const errorMessage = ref('');
 
 const placementDrive = ref(null);
 
+const allowedActions = computed(() => {
+  const role = authStore.user?.role?.toLowerCase();
+
+  switch (role) {
+    case 'admin':
+      return ['approve', 'decline', 'close', 'reopen', 'edit', 'delete'];
+    case 'company':
+      return ['close', 'reopen', 'edit', 'delete'];
+    case 'student':
+      return ['apply'];
+    default:
+      return [];
+  }
+});
+
 async function logout() {
   await authStore.logout();
   router.push('/login');
 }
 
-async function openEditModal(placementDriveId) {}
 async function fetchPlacementDriveDetails(placementDriveId) {
   errorMessage.value = '';
   try {
@@ -42,24 +56,18 @@ onMounted(async () => {
 });
 </script>
 <template>
+  <h2 class="text-center mt-3">Placement Drive Details</h2>
   <PlacementDriveDetails
     v-if="placementDrive"
     :placement-drive="placementDrive"
-    :can-edit="false"
-    @edit="openEditModal"
+    mode="view"
+    :show-applications-count="true"
+    :allowed-actions="allowedActions"
   />
 
-  <div
-    v-else-if="errorMessage"
-    class="alert alert-danger"
-  >
+  <div v-else-if="errorMessage" class="alert alert-danger">
     {{ errorMessage }}
   </div>
 
-  <div
-    v-else
-    class="text-center mt-5"
-  >
-    Loading...
-  </div>
+  <div v-else class="text-center mt-5">Loading...</div>
 </template>
