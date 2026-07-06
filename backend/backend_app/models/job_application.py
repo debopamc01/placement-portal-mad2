@@ -35,7 +35,7 @@ class JobApplication(db.Model):
         return {
             "id": self.id,
             "student": self.student.to_dict() if self.student else None,
-            "placement_drive_id": self.placement_drive_id,
+            "placement_drive": self.placement_drive.to_dict(),
             "application_date": (
                 self.application_date.astimezone(
                     tz=ZoneInfo("Asia/Kolkata")

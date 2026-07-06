@@ -6,6 +6,7 @@ import RegisterView from '@/views/RegisterView.vue';
 import CompanyDashboard from '@/views/CompanyDashboard.vue';
 import StudentDashboard from '@/views/StudentDashboard.vue';
 import PlacementDriveView from '@/views/PlacementDriveView.vue';
+import ApplicationView from '@/views/ApplicationView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -46,6 +47,11 @@ const router = createRouter({
       path: '/placement-drive/:id',
       name: 'placement-drive-view',
       component: PlacementDriveView,
+    },
+    {
+      path: '/applications/:id',
+      name: 'application-view',
+      component: ApplicationView,
     },
   ],
 });

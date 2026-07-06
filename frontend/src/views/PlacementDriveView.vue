@@ -103,6 +103,15 @@ async function updateApplicationStatus(applicationId, applicationAction) {
     errorMessage.value = `Unable to ${applicationAction} the application`;
   }
 }
+async function viewApplicationDetails(applicationId) {
+  errorMessage.value = '';
+  try {
+    router.push(`/applications/${applicationId}`);
+  } catch (error) {
+    console.error(error);
+    errorMessage.value = `Unable to view application with id: ${applicationId}`;
+  }
+}
 onMounted(async () => {
   await authStore.loadUser();
   await fetchPlacementDriveDetails(placementDriveId.value);
@@ -134,5 +143,6 @@ onMounted(async () => {
     @shortlist="(applicationId) => updateApplicationStatus(applicationId, 'shortlist')"
     @select="(applicationId) => updateApplicationStatus(applicationId, 'select')"
     @reject="(applicationId) => updateApplicationStatus(applicationId, 'reject')"
+    @view="(applicationId) => viewApplicationDetails(applicationId)"
   />
 </template>

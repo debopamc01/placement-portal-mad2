@@ -160,8 +160,7 @@ def update_placement_drive(drive_id: int):
 
         # Reset all the applications for the placement drive on update
         for application in placement_drive.applications:
-            if not application.status == JobApplicationStatus.CLOSED:
-                application.status = JobApplicationStatus.APPLIED
+            application.status = JobApplicationStatus.APPLIED
 
         db.session.commit()
         return success_response(
@@ -177,9 +176,11 @@ def update_placement_drive(drive_id: int):
 @role_required(UserRole.COMPANY)
 def get_job_application(app_id: int):
     application: JobApplication | None = db.session.scalar(
-        db.select(JobApplication).where(
+        db.select(JobApplication)
+        .join(JobApplication.placement_drive)
+        .where(
             JobApplication.id == app_id,
-            JobApplication.placement_drive.company_id == current_user.company.id,
+            PlacementDrive.company_id == current_user.company.id,
         )
     )
 
@@ -228,7 +229,9 @@ def modify_job_application_status(application_id: int, action: ApplicationAction
             errors=f"Invalid action: {action}", status=HTTPStatus.BAD_REQUEST
         )
     application: JobApplication | None = db.session.scalar(
-        db.select(JobApplication).join(JobApplication.placement_drive).where(
+        db.select(JobApplication)
+        .join(JobApplication.placement_drive)
+        .where(
             JobApplication.id == application_id,
             PlacementDrive.company_id == current_user.company.id,
         )
@@ -244,8 +247,6 @@ def modify_job_application_status(application_id: int, action: ApplicationAction
         application.status = JobApplicationStatus.SELECTED
     elif action == ApplicationAction.REJECT:
         application.status = JobApplicationStatus.REJECTED
-    elif action == ApplicationAction.CLOSE:
-        application.status = JobApplicationStatus.CLOSED
 
     try:
         db.session.commit()
@@ -291,17 +292,4 @@ def reject_application(application_id: int):
         )
     return modify_job_application_status(
         application_id=application_id, action=ApplicationAction.REJECT
-    )
-
-
-@company_bp.post("/applications/<int:application_id>/close")
-@login_required
-@role_required(UserRole.COMPANY)
-def close_application(application_id: int):
-    if not application_id:
-        return error_response(
-            errors="Application id not specified", status=HTTPStatus.BAD_REQUEST
-        )
-    return modify_job_application_status(
-        application_id=application_id, action=ApplicationAction.CLOSE
     )

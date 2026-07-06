@@ -71,7 +71,7 @@ const emit = defineEmits(['view', 'shortlist', 'select', 'reject']);
                         class="dropdown-item"
                         @click="emit('view', application.id)"
                       >
-                        View Profile
+                        View Details
                       </button>
                     </li>
 
@@ -85,7 +85,7 @@ const emit = defineEmits(['view', 'shortlist', 'select', 'reject']);
                       </button>
                     </li>
 
-                    <li v-if="actions.includes('select') && application.status === 'shortlisted'">
+                    <li v-if="actions.includes('select') && application.status !== 'selected'">
                       <button
                         type="button"
                         class="dropdown-item text-success"
@@ -95,13 +95,7 @@ const emit = defineEmits(['view', 'shortlist', 'select', 'reject']);
                       </button>
                     </li>
 
-                    <li
-                      v-if="
-                        actions.includes('reject') &&
-                        application.status !== 'rejected' &&
-                        application.status !== 'selected'
-                      "
-                    >
+                    <li v-if="actions.includes('reject') && application.status !== 'rejected'">
                       <button
                         type="button"
                         class="dropdown-item text-danger"

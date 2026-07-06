@@ -26,7 +26,6 @@ class JobApplicationStatus(StrEnum):
     SHORTLISTED = "shortlisted"
     SELECTED = "selected"
     REJECTED = "rejected"
-    CLOSED = "closed"
 
 
 class CompanyApprovalAction(StrEnum):
@@ -34,8 +33,8 @@ class CompanyApprovalAction(StrEnum):
     REJECT = "reject"
     BLACKLIST = "blacklist"
 
+
 class ApplicationAction(StrEnum):
-    SHORTLIST = 'shortlist'
-    SELECT = 'select'
-    REJECT = 'reject'
-    CLOSE = 'close'
+    SHORTLIST = "shortlist"
+    SELECT = "select"
+    REJECT = "reject"
