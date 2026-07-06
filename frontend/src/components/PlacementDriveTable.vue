@@ -98,7 +98,7 @@ function jobApplicationStatusClass(status) {
 
         <td>{{ placementDrive.job_title }}</td>
 
-        <td>{{ placementDrive.application_deadline }}</td>
+        <td>{{ new Date(placementDrive.application_deadline).toLocaleString() }}</td>
 
         <td v-if="showPlacementDriveStatus" style="text-transform: uppercase">
           <span class="badge" :class="placementDriveStatusClass(placementDrive.status)">

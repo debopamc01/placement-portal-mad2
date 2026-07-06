@@ -10,6 +10,8 @@ const route = useRoute();
 const authStore = useAuthStore();
 
 const errorMessage = ref('');
+const successMessage = ref('');
+const loading = ref(false);
 const placementDriveId = computed(() => route.params.id);
 
 const placementDrive = ref(null);
@@ -28,6 +30,14 @@ const allowedActions = computed(() => {
     default:
       return [];
   }
+});
+
+const props = defineProps({
+  mode: {
+    type: String,
+    default: 'view',
+    // supported options: create, edit, view
+  },
 });
 
 async function logout() {
@@ -112,20 +122,70 @@ async function viewApplicationDetails(applicationId) {
     errorMessage.value = `Unable to view application with id: ${applicationId}`;
   }
 }
+async function createPlacementDrive(newDrive) {
+  errorMessage.value = '';
+  loading.value = true;
+  try {
+    const payload = {
+      job_title: newDrive.job_title,
+      description: newDrive.job_description,
+      eligibility_criteria: newDrive.eligibility_criteria,
+      application_deadline: newDrive.application_deadline,
+    };
+    const response = await fetch('/api/company/placement-drives', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      errorMessage.value = data.errors;
+      return;
+    }
+    const newDrive = data.data.placement_drive;
+
+    successMessage.value = 'Placement drive created successfully';
+    router.push(`/placement-drives/${newDrive.id}`);
+  } catch (error) {
+    console.error(error);
+    errorMessage.value = 'Unable to create placement drive';
+  } finally {
+    loading.value = false;
+  }
+}
 onMounted(async () => {
   await authStore.loadUser();
-  await fetchPlacementDriveDetails(placementDriveId.value);
-  await fetchApplications(placementDriveId.value);
+  if (props.mode !== 'create') {
+    await fetchPlacementDriveDetails(placementDriveId.value);
+    if (props.mode !== 'edit') {
+    await fetchApplications(placementDriveId.value);
+    }
+  }
 });
 </script>
 <template>
   <h2 class="text-center mt-3">Placement Drive Details</h2>
   <PlacementDriveDetails
-    v-if="placementDrive"
+    v-if="mode === 'create'"
     :placement-drive="placementDrive"
-    mode="view"
+    :mode="mode"
     :show-applications-count="true"
     :allowed-actions="allowedActions"
+    @create="createPlacementDrive"
+  />
+  <!-- TODO: Modify this -->
+  <PlacementDriveDetails
+    v-else-if="placementDrive"
+    :placement-drive="placementDrive"
+    :mode="mode"
+    :show-applications-count="true"
+    :allowed-actions="allowedActions"
+    @create="createPlacementDrive"
   />
 
   <div v-else-if="errorMessage" class="alert alert-danger">
@@ -134,10 +194,10 @@ onMounted(async () => {
 
   <div v-else class="text-center mt-5">Loading...</div>
 
-  <h3 class="text-center mt-2">Applications</h3>
+  <h3 class="text-center mt-2" v-if="mode !== 'create'">Applications</h3>
 
   <ApplicationsTable
-    v-if="placementDrive"
+    v-if="placementDrive && mode != 'create'"
     :applications="applications"
     :actions="['view', 'shortlist', 'select', 'reject']"
     @shortlist="(applicationId) => updateApplicationStatus(applicationId, 'shortlist')"

@@ -41,49 +41,6 @@ async function loadPlacementDrives() {
     errorMessage.value = 'Unable to load placement drives';
   }
 }
-async function createPlacementDrive() {
-  loading.value = true;
-  try {
-    const payload = {
-      job_title: jobTitle.value,
-      description: jobDescription.value,
-      eligibility_criteria: eligibilityCriteria.value,
-      application_deadline: applicationDeadline.value,
-    };
-    const response = await fetch('/api/company/placement-drives', {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      errorMessage.value = data.errors;
-      return;
-    }
-    const newDrive = data.data.placement_drive;
-
-    placementDrives.value.push(newDrive);
-    successMessage.value = 'Placement drive created successfully';
-
-    const closeButton = document.querySelector(
-      '#createPlacementDriveModal [data-bs-dismiss="modal"]',
-    );
-
-    setTimeout(() => {
-      closeButton.click();
-    }, 1000);
-  } catch (error) {
-    console.error(error);
-    errorMessage.value = 'Unable to create placement drive';
-  } finally {
-    loading.value = false;
-  }
-}
 function resetForm() {
   jobTitle.value = '';
   jobDescription.value = '';
@@ -99,18 +56,12 @@ async function editPlacementDrive() {}
 async function deletePlacementDrive() {}
 async function viewPlacementDrive(placementDriveId) {
   router.push({
-    path: `/placement-drive/${placementDriveId}`,
+    path: `/placement-drives/${placementDriveId}`,
   });
 }
 onMounted(() => {
   authStore.loadUser();
   loadPlacementDrives();
-
-  const modalElement = document.getElementById('createPlacementDriveModal');
-
-  modalElement.addEventListener('hidden.bs.modal', () => {
-    resetForm();
-  });
 });
 </script>
 
@@ -137,12 +88,8 @@ onMounted(() => {
     <div class="card shadow-sm">
       <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="card-title mb-0"><i class="fas fa-briefcase"></i> Placement Drives</h5>
-        <button
-          class="btn btn-outline-primary"
-          data-bs-toggle="modal"
-          data-bs-target="#createPlacementDriveModal"
-        >
-          <i class="fas fa-plus"></i> Create New Drive
+        <button class="btn btn-outline-primary" @click="router.push('/placement-drives/create')">
+          Create New Placement Drive
         </button>
       </div>
       <PlacementDriveTable
@@ -154,100 +101,6 @@ onMounted(() => {
         @delete="deletePlacementDrive"
         @view="viewPlacementDrive"
       />
-      <div
-        class="modal fade"
-        id="createPlacementDriveModal"
-        tabindex="-1"
-        aria-labelledby="createPlacementDriveModalLabel"
-        aria-hidden="true"
-      >
-        <div class="modal-dialog modal-lg">
-          <div class="modal-content">
-            <form @submit.prevent="createPlacementDrive">
-              <div class="modal-header">
-                <h5 class="modal-title" id="createPlacementDriveModalLabel">
-                  Create Placement Drive
-                </h5>
-
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-              </div>
-
-              <div class="modal-body">
-                <div v-if="successMessage" class="alert alert-success">
-                  {{ successMessage }}
-                </div>
-
-                <div v-if="errorMessage" class="alert alert-danger">
-                  {{ errorMessage }}
-                </div>
-                <!-- Job Title -->
-
-                <div class="mb-3">
-                  <label class="form-label"> Job Title </label>
-
-                  <input v-model="jobTitle" class="form-control" required />
-                </div>
-
-                <!-- Description -->
-
-                <div class="mb-3">
-                  <label class="form-label"> Job Description </label>
-
-                  <textarea
-                    v-model="jobDescription"
-                    rows="4"
-                    class="form-control"
-                    required
-                  ></textarea>
-                </div>
-
-                <!-- Eligibility -->
-
-                <div class="mb-3">
-                  <label class="form-label"> Eligibility Criteria </label>
-
-                  <textarea
-                    v-model="eligibilityCriteria"
-                    rows="3"
-                    class="form-control"
-                    required
-                  ></textarea>
-                </div>
-
-                <!-- Deadline -->
-
-                <div class="mb-3">
-                  <label class="form-label"> Application Deadline </label>
-
-                  <input
-                    v-model="applicationDeadline"
-                    type="datetime-local"
-                    class="form-control"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div class="modal-footer">
-                <div>
-                  <button
-                    type="button"
-                    class="btn btn-secondary"
-                    data-bs-dismiss="modal"
-                    :disabled="loading"
-                  >
-                    Cancel
-                  </button>
-
-                  <button class="btn btn-primary" type="submit" :disabled="loading">
-                    {{ loading ? 'Creating...' : 'Create' }}
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>
