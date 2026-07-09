@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from http import HTTPStatus
 from typing import Sequence
 from zoneinfo import ZoneInfo
@@ -26,6 +26,7 @@ def apply_to_placement_drive():
         )
     data = request.get_json()
     placement_drive_id = data.get("placement_drive_id")
+    application_time = data.get("application_time")
 
     placement_drive: PlacementDrive = db.session.scalar(
         db.select(PlacementDrive).where(PlacementDrive.id == placement_drive_id)
@@ -58,9 +59,7 @@ def apply_to_placement_drive():
         new_application = JobApplication()
         new_application.student = current_user.student
         new_application.placement_drive = placement_drive
-        new_application.application_date = datetime.now().astimezone(
-            ZoneInfo("Asia/Kolkata")
-        )
+        new_application.application_date = str(datetime.now(timezone.utc))
         db.session.add(new_application)
         db.session.commit()
         return success_response(

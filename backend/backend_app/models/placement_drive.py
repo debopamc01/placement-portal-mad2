@@ -1,8 +1,7 @@
 from __future__ import annotations
-from zoneinfo import ZoneInfo
 
 from sqlalchemy.orm import Mapped, relationship, mapped_column
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Optional
 
 from backend_app.extensions import db
@@ -26,7 +25,7 @@ class PlacementDrive(db.Model):
     job_title: Mapped[str] = mapped_column(nullable=False)
     job_description: Mapped[Optional[str]] = mapped_column(nullable=True)
     eligibility_criteria: Mapped[Optional[str]] = mapped_column(nullable=True)
-    application_deadline: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    application_deadline: Mapped[Optional[str]] = mapped_column(nullable=True)
     applications: Mapped[list[JobApplication]] = relationship(
         "JobApplication", back_populates="placement_drive", cascade="all, delete-orphan"
     )
@@ -42,9 +41,9 @@ class PlacementDrive(db.Model):
             "job_description": self.job_description,
             "eligibility_criteria": self.eligibility_criteria,
             "application_deadline": (
-                self.application_deadline.astimezone(
-                    tz=ZoneInfo("Asia/Kolkata")
-                ).isoformat()
+                datetime.fromisoformat(self.application_deadline).astimezone(
+                    timezone.utc
+                )
                 if self.application_deadline
                 else None
             ),

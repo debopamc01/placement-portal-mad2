@@ -20,6 +20,11 @@ const props = defineProps({
     // supported options: create/edit/view
   },
 
+  loading: {
+    type: Boolean,
+    default: false,
+  },
+
   showApplicationsCount: {
     type: Boolean,
     default: false,
@@ -63,7 +68,7 @@ watch(
       job_title: drive.job_title ?? '',
       job_description: drive.job_description ?? '',
       eligibility_criteria: drive.eligibility_criteria ?? '',
-      application_deadline: drive.application_deadline ?? '',
+      application_deadline: to_datetime_local_format(drive.application_deadline) ?? '',
     });
   },
 
@@ -78,6 +83,16 @@ const formattedDeadline = computed(() => {
 
   return new Date(props.placementDrive.application_deadline).toLocaleString();
 });
+
+function to_datetime_local_format(deadline) {
+  if (!deadline) return;
+  const date = new Date(deadline);
+
+  const pad = (n) => String(n).padStart(2, '0');
+
+  const formattedDate = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  return formattedDate;
+}
 
 function submit() {
   if (props.mode === 'create') {
@@ -190,12 +205,24 @@ function submit() {
             <div class="d-flex gap-2">
               <!-- Create -->
 
-              <button v-if="mode === 'create'" class="btn btn-primary" type="submit">Create</button>
+              <button
+                v-if="mode === 'create'"
+                class="btn btn-primary"
+                type="submit"
+                :disabled="loading"
+              >
+                {{ loading ? 'Creating' : 'Create' }}
+              </button>
 
               <!-- Edit -->
 
-              <button v-else-if="mode === 'edit'" class="btn btn-primary" type="submit">
-                Save Changes
+              <button
+                v-else-if="mode === 'edit'"
+                class="btn btn-primary"
+                type="submit"
+                :disabled="loading"
+              >
+                {{ loading ? 'Saving' : 'Save Changes' }}
               </button>
 
               <!-- View -->
@@ -217,7 +244,7 @@ function submit() {
                     <button
                       type="button"
                       class="dropdown-item text-success"
-                      @click="$emit('approve', placementDrive.id)"
+                      @click="$emit('approve')"
                     >
                       Approve
                     </button>
@@ -231,18 +258,14 @@ function submit() {
                     <button
                       type="button"
                       class="dropdown-item text-danger"
-                      @click="$emit('decline', placementDrive.id)"
+                      @click="$emit('decline')"
                     >
                       Decline
                     </button>
                   </li>
 
                   <li v-if="allowedActions.includes('edit') && placementDrive.status !== 'closed'">
-                    <button
-                      type="button"
-                      class="dropdown-item text-primary"
-                      @click="$emit('edit', placementDrive.id)"
-                    >
+                    <button type="button" class="dropdown-item text-primary" @click="$emit('edit')">
                       Edit
                     </button>
                   </li>
@@ -251,7 +274,7 @@ function submit() {
                     <button
                       type="button"
                       class="dropdown-item text-warning"
-                      @click="$emit('close', placementDrive.id)"
+                      @click="$emit('close')"
                     >
                       Close
                     </button>
@@ -263,7 +286,7 @@ function submit() {
                     <button
                       type="button"
                       class="dropdown-item text-success"
-                      @click="$emit('reopen', placementDrive.id)"
+                      @click="$emit('reopen')"
                     >
                       Reopen
                     </button>
@@ -277,7 +300,7 @@ function submit() {
                     <button
                       type="button"
                       class="dropdown-item text-danger"
-                      @click="$emit('delete', placementDrive.id)"
+                      @click="$emit('delete')"
                     >
                       Delete
                     </button>
@@ -287,7 +310,7 @@ function submit() {
                     <button
                       type="button"
                       class="dropdown-item text-primary"
-                      @click="$emit('apply', placementDrive.id)"
+                      @click="$emit('apply')"
                     >
                       Apply
                     </button>
@@ -297,7 +320,12 @@ function submit() {
             </div>
             <!-- Right button -->
 
-            <button type="button" class="btn btn-secondary" @click="$emit('back')">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              :disabled="loading"
+              @click="$emit('back')"
+            >
               {{ mode === 'view' ? 'Back' : 'Cancel' }}
             </button>
           </div>

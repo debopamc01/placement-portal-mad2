@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, ref, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import PlacementDriveDetails from '@/components/PlacementDriveDetails.vue';
@@ -12,7 +12,6 @@ const authStore = useAuthStore();
 const errorMessage = ref('');
 const successMessage = ref('');
 const loading = ref(false);
-const placementDriveId = computed(() => route.params.id);
 
 const placementDrive = ref(null);
 const applications = ref([]);
@@ -130,7 +129,7 @@ async function createPlacementDrive(newDrive) {
       job_title: newDrive.job_title,
       description: newDrive.job_description,
       eligibility_criteria: newDrive.eligibility_criteria,
-      application_deadline: newDrive.application_deadline,
+      application_deadline: new Date(newDrive.application_deadline).toISOString() ,
     };
     const response = await fetch('/api/company/placement-drives', {
       method: 'POST',
@@ -147,10 +146,10 @@ async function createPlacementDrive(newDrive) {
       errorMessage.value = data.errors;
       return;
     }
-    const newDrive = data.data.placement_drive;
+    placementDrive.value = data.data.placement_drive;
 
     successMessage.value = 'Placement drive created successfully';
-    router.push(`/placement-drives/${newDrive.id}`);
+    router.push(`/placement-drives/${placementDrive.value.id}`);
   } catch (error) {
     console.error(error);
     errorMessage.value = 'Unable to create placement drive';
@@ -158,12 +157,51 @@ async function createPlacementDrive(newDrive) {
     loading.value = false;
   }
 }
-onMounted(async () => {
-  await authStore.loadUser();
+
+async function saveEditedPlacementDrive(drive) {
+  errorMessage.value = '';
+  loading.value = true;
+  try {
+    const payload = {
+      job_title: drive.job_title,
+      description: drive.job_description,
+      eligibility_criteria: drive.eligibility_criteria,
+      application_deadline: new Date(drive.application_deadline).toISOString(),
+    };
+    const url = `/api/company/placement-drives/${placementDrive.value.id}`;
+    const response = await fetch(url, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      errorMessage.value = data.errors;
+      return;
+    }
+    router.push(`/placement-drives/${placementDrive.value.id}`);
+  } catch (error) {
+    console.error(error);
+    errorMessage.value = 'Unable to edit placement drive';
+  } finally {
+    loading.value = false;
+  }
+}
+
+function navigateToEditPage() {
+  router.push(`/placement-drives/${placementDrive.value.id}/edit`);
+}
+
+watchEffect(async () => {
+  if (!authStore.user) await authStore.loadUser();
   if (props.mode !== 'create') {
-    await fetchPlacementDriveDetails(placementDriveId.value);
+    await fetchPlacementDriveDetails(route.params.id);
     if (props.mode !== 'edit') {
-    await fetchApplications(placementDriveId.value);
+      await fetchApplications(route.params.id);
     }
   }
 });
@@ -172,20 +210,20 @@ onMounted(async () => {
   <h2 class="text-center mt-3">Placement Drive Details</h2>
   <PlacementDriveDetails
     v-if="mode === 'create'"
-    :placement-drive="placementDrive"
     :mode="mode"
-    :show-applications-count="true"
-    :allowed-actions="allowedActions"
+    :loading="loading"
     @create="createPlacementDrive"
   />
-  <!-- TODO: Modify this -->
+
   <PlacementDriveDetails
     v-else-if="placementDrive"
     :placement-drive="placementDrive"
     :mode="mode"
-    :show-applications-count="true"
+    :loading="loading"
+    :show-applications-count="mode === 'view'"
     :allowed-actions="allowedActions"
-    @create="createPlacementDrive"
+    @save="saveEditedPlacementDrive"
+    @edit="navigateToEditPage"
   />
 
   <div v-else-if="errorMessage" class="alert alert-danger">
@@ -194,10 +232,10 @@ onMounted(async () => {
 
   <div v-else class="text-center mt-5">Loading...</div>
 
-  <h3 class="text-center mt-2" v-if="mode !== 'create'">Applications</h3>
+  <h3 class="text-center mt-2" v-if="mode === 'view'">Applications</h3>
 
   <ApplicationsTable
-    v-if="placementDrive && mode != 'create'"
+    v-if="placementDrive && mode === 'view'"
     :applications="applications"
     :actions="['view', 'shortlist', 'select', 'reject']"
     @shortlist="(applicationId) => updateApplicationStatus(applicationId, 'shortlist')"

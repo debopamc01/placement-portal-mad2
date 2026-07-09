@@ -44,29 +44,22 @@ const router = createRouter({
       component: StudentDashboard,
     },
     {
-      path: '/placement-drives',
-      children: [
-        {
-          path: 'create',
-          props: { mode: 'create' },
-          component: PlacementDriveView,
-        },
-        {
-          path: ':id',
-          children: [
-            {
-              path: '',
-              props: { mode: 'view' },
-              component: PlacementDriveView,
-            },
-            {
-              path: 'edit',
-              props: { mode: 'edit' },
-              component: PlacementDriveView,
-            },
-          ],
-        },
-      ],
+      path: '/placement-drives/create',
+      name: 'create-placement-drive',
+      component: PlacementDriveView,
+      props: { mode: 'create' },
+    },
+    {
+      path: '/placement-drives/:id',
+      name: 'view-placement-drive',
+      component: PlacementDriveView,
+      props: { mode: 'view' },
+    },
+    {
+      path: '/placement-drives/:id/edit',
+      name: 'edit-placement-drive',
+      component: PlacementDriveView,
+      props: { mode: 'edit' },
     },
     {
       path: '/applications/:id',

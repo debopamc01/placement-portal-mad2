@@ -1,9 +1,8 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
-from zoneinfo import ZoneInfo
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from datetime import datetime
+from datetime import datetime, timezone
 
 from backend_app.extensions import db
 from backend_app.models.model_enums import JobApplicationStatus
@@ -20,7 +19,7 @@ class JobApplication(db.Model):
         db.ForeignKey("placement_drive.id", ondelete="CASCADE"),
         nullable=False,
     )
-    application_date: Mapped[datetime] = mapped_column(nullable=False)
+    application_date: Mapped[str] = mapped_column(nullable=False)
     status: Mapped[JobApplicationStatus] = mapped_column(
         type_=db.Enum(JobApplicationStatus),
         default=JobApplicationStatus.APPLIED,
@@ -37,9 +36,7 @@ class JobApplication(db.Model):
             "student": self.student.to_dict() if self.student else None,
             "placement_drive": self.placement_drive.to_dict(),
             "application_date": (
-                self.application_date.astimezone(
-                    tz=ZoneInfo("Asia/Kolkata")
-                ).isoformat()
+                datetime.fromisoformat(self.application_date).astimezone(timezone.utc)
                 if self.application_date
                 else None
             ),
