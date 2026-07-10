@@ -23,7 +23,7 @@ const allowedActions = computed(() => {
     case 'admin':
       return ['approve', 'decline', 'close', 'reopen', 'edit', 'delete'];
     case 'company':
-      return ['close', 'reopen', 'edit', 'delete'];
+      return ['close', 'reopen', 'edit'];
     case 'student':
       return ['apply'];
     default:
@@ -42,6 +42,10 @@ const props = defineProps({
 async function logout() {
   await authStore.logout();
   router.push('/login');
+}
+
+async function goBack() {
+  router.back();
 }
 
 async function fetchPlacementDriveDetails(placementDriveId) {
@@ -129,7 +133,7 @@ async function createPlacementDrive(newDrive) {
       job_title: newDrive.job_title,
       description: newDrive.job_description,
       eligibility_criteria: newDrive.eligibility_criteria,
-      application_deadline: new Date(newDrive.application_deadline).toISOString() ,
+      application_deadline: new Date(newDrive.application_deadline).toISOString(),
     };
     const response = await fetch('/api/company/placement-drives', {
       method: 'POST',
@@ -161,10 +165,19 @@ async function createPlacementDrive(newDrive) {
 async function saveEditedPlacementDrive(drive) {
   errorMessage.value = '';
   loading.value = true;
+  const proceed = confirm(
+    'Modifying the placement drive will reset the approval from admin.\
+    Do you want to proceed?',
+  );
+  if (!proceed) {
+    loading.value = false;
+    goBack();
+    return;
+  }
   try {
     const payload = {
       job_title: drive.job_title,
-      description: drive.job_description,
+      job_description: drive.job_description,
       eligibility_criteria: drive.eligibility_criteria,
       application_deadline: new Date(drive.application_deadline).toISOString(),
     };
@@ -196,6 +209,32 @@ function navigateToEditPage() {
   router.push(`/placement-drives/${placementDrive.value.id}/edit`);
 }
 
+async function updatePlacementDriveStatus(action) {
+  errorMessage.value = '';
+
+  if (!['close', 'reopen'].includes(action)) {
+    console.error(`Unknown action specified:${action}`);
+    return;
+  }
+
+  try {
+    const userRole = authStore.user.role.toLowerCase();
+    const url = `/api/${userRole}/placement-drives/${placementDrive.value.id}/${action}`;
+    const response = await fetch(url, { method: 'POST', credentials: 'include' });
+    const data = await response.json();
+
+    if (!response.ok) {
+      errorMessage.value = data.errors;
+      return;
+    }
+
+    placementDrive.value = data.data.placement_drive;
+  } catch (error) {
+    console.error(error);
+    errorMessage.value = 'Error while modifying placement drive';
+  }
+}
+
 watchEffect(async () => {
   if (!authStore.user) await authStore.loadUser();
   if (props.mode !== 'create') {
@@ -224,6 +263,9 @@ watchEffect(async () => {
     :allowed-actions="allowedActions"
     @save="saveEditedPlacementDrive"
     @edit="navigateToEditPage"
+    @close="updatePlacementDriveStatus('close')"
+    @reopen="updatePlacementDriveStatus('reopen')"
+    @back="goBack"
   />
 
   <div v-else-if="errorMessage" class="alert alert-danger">
@@ -238,6 +280,7 @@ watchEffect(async () => {
     v-if="placementDrive && mode === 'view'"
     :applications="applications"
     :actions="['view', 'shortlist', 'select', 'reject']"
+    :disable-actions-button="placementDrive.status !== 'active'"
     @shortlist="(applicationId) => updateApplicationStatus(applicationId, 'shortlist')"
     @select="(applicationId) => updateApplicationStatus(applicationId, 'select')"
     @reject="(applicationId) => updateApplicationStatus(applicationId, 'reject')"
