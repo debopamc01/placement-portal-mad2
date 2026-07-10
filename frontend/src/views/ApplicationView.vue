@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import StatusBadge from '@/components/StatusBadges.vue';
 import StudentDetails from '@/components/StudentDetails.vue';
 
@@ -9,6 +9,7 @@ const application = ref(null);
 const errorMessage = ref('');
 
 const route = useRoute();
+const router = useRouter();
 const authStore = useAuthStore();
 
 async function fetchApplication(applicationId) {
@@ -33,6 +34,9 @@ async function fetchApplication(applicationId) {
   }
 }
 
+function goBack() {
+  router.back();
+}
 onMounted(async () => {
   await authStore.loadUser();
   await fetchApplication(route.params.id);
@@ -75,7 +79,7 @@ onMounted(async () => {
         </div>
       </div>
 
-      <StudentDetails :student="application.student" mode="view" />
+      <StudentDetails :student="application.student" mode="view" @back="goBack" />
     </div>
   </template>
 </template>

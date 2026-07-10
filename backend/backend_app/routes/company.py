@@ -59,6 +59,57 @@ def create_placement_drive():
         return error_response(errors=str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
+def modify_placement_drive_status(drive_id: int, action: str):
+    try:
+        placement_drive: PlacementDrive | None = db.session.scalar(
+            db.select(PlacementDrive).where(
+                PlacementDrive.id == drive_id,
+                PlacementDrive.company_id == current_user.company.id,
+            )
+        )
+
+        if not placement_drive:
+            return error_response(
+                errors="No placement drive exists with specified id",
+                status=HTTPStatus.NOT_FOUND,
+            )
+        if action == "close":
+            placement_drive.status = PlacementDriveStatus.CLOSED
+        elif action == "reopen":
+            placement_drive.status = PlacementDriveStatus.PENDING
+        else:
+            raise ValueError(f"Unknown action specified: {action}")
+
+        db.session.commit()
+
+        return success_response(data={"placement_drive": placement_drive.to_dict()})
+    except Exception as e:
+        db.session.rollback()
+        return error_response(errors=str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR)
+
+
+@company_bp.post("/placement-drives/<int:drive_id>/close")
+@login_required
+@role_required(UserRole.COMPANY)
+def close_placement_drive(drive_id: int):
+    if current_user.company.approval_status != CompanyApprovalStatus.APPROVED:
+        return error_response(
+            errors="Company is not yet approved", status=HTTPStatus.FORBIDDEN
+        )
+    return modify_placement_drive_status(drive_id=drive_id, action="close")
+
+
+@company_bp.post("/placement-drives/<int:drive_id>/reopen")
+@login_required
+@role_required(UserRole.COMPANY)
+def reopen_placement_drive(drive_id: int):
+    if current_user.company.approval_status != CompanyApprovalStatus.APPROVED:
+        return error_response(
+            errors="Company is not yet approved", status=HTTPStatus.FORBIDDEN
+        )
+    return modify_placement_drive_status(drive_id=drive_id, action="reopen")
+
+
 @company_bp.get("/placement-drives")
 @login_required
 @role_required(UserRole.COMPANY)

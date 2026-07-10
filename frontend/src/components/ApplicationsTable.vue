@@ -11,6 +11,11 @@ defineProps({
     type: Array,
     default: () => [],
   },
+
+  disableActionsButton: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 const emit = defineEmits(['view', 'shortlist', 'select', 'reject']);
@@ -60,6 +65,7 @@ const emit = defineEmits(['view', 'shortlist', 'select', 'reject']);
                     type="button"
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
+                    :disabled="disableActionsButton"
                   >
                     Actions
                   </button>
