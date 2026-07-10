@@ -136,7 +136,13 @@ function jobApplicationStatusClass(status) {
                 View Details
               </button>
             </li>
-            <li v-if="placementDrive.status !== 'active' && actions.indexOf('approve') != -1">
+            <li
+              v-if="
+                (!['active','closed'].includes(placementDrive.status)) &&
+                actions.includes('approve') &&
+                placementDrive.company.approval_status === 'approved'
+              "
+            >
               <button
                 class="dropdown-item text-success"
                 @click="emit('approve', placementDrive.id)"
@@ -145,36 +151,66 @@ function jobApplicationStatusClass(status) {
               </button>
             </li>
 
-            <li v-if="placementDrive.status !== 'declined' && actions.indexOf('decline') != -1">
+            <li
+              v-if="
+                (!['declined','closed'].includes(placementDrive.status)) &&
+                actions.includes('decline') &&
+                placementDrive.company.approval_status === 'approved'
+              "
+            >
               <button class="dropdown-item text-danger" @click="emit('decline', placementDrive.id)">
                 Decline
               </button>
             </li>
 
-            <li v-if="placementDrive.status !== 'closed' && actions.indexOf('close') != -1">
+            <li
+              v-if="
+                placementDrive.status !== 'closed' &&
+                actions.includes('close') &&
+                placementDrive.company.approval_status === 'approved'
+              "
+            >
               <button class="dropdown-item text-warning" @click="emit('close', placementDrive.id)">
                 Close
               </button>
             </li>
 
-            <li v-if="placementDrive.status === 'closed' && actions.indexOf('reopen') != -1">
+            <li
+              v-if="
+                placementDrive.status === 'closed' &&
+                actions.includes('reopen') &&
+                placementDrive.company.approval_status === 'approved'
+              "
+            >
               <button class="dropdown-item text-success" @click="emit('reopen', placementDrive.id)">
                 Reopen
               </button>
             </li>
 
-            <li v-if="placementDrive.status !== 'closed' && actions.indexOf('edit') != -1">
+            <li
+              v-if="
+                placementDrive.status !== 'closed' &&
+                actions.includes('edit') &&
+                placementDrive.company.approval_status === 'approved'
+              "
+            >
               <button class="dropdown-item text-primary" @click="emit('edit', placementDrive.id)">
                 Edit
               </button>
             </li>
 
-            <li v-if="actions.indexOf('delete') != -1">
+            <li v-if="actions.includes('delete')">
               <button class="dropdown-item text-danger" @click="emit('delete', placementDrive.id)">
                 Delete
               </button>
             </li>
-            <li v-if="actions.indexOf('apply') != -1 && !placementDrive.has_applied">
+            <li
+              v-if="
+                actions.includes('apply') &&
+                !placementDrive.has_applied &&
+                placementDrive.company.approval_status === 'approved'
+              "
+            >
               <button class="dropdown-item btn-primary" @click="emit('apply', placementDrive.id)">
                 Apply
               </button>

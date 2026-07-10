@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import PlacementDriveDetails from '@/components/PlacementDriveDetails.vue';
 import ApplicationsTable from '@/components/ApplicationsTable.vue';
+import { modifyPlacementDriveStatus } from '@/common/apiFunctions';
 
 const router = useRouter();
 const route = useRoute();
@@ -16,7 +17,7 @@ const loading = ref(false);
 const placementDrive = ref(null);
 const applications = ref([]);
 
-const allowedActions = computed(() => {
+const allowedActionsForPlacementDrive = computed(() => {
   const role = authStore.user?.role?.toLowerCase();
 
   switch (role) {
@@ -26,6 +27,21 @@ const allowedActions = computed(() => {
       return ['close', 'reopen', 'edit'];
     case 'student':
       return ['apply'];
+    default:
+      return [];
+  }
+});
+
+const allowedActionsForApplication = computed(() => {
+  const role = authStore.user?.role?.toLowerCase();
+
+  switch (role) {
+    case 'admin':
+      return ['view'];
+    case 'company':
+      return ['view', 'shortlist', 'select', 'reject'];
+    case 'student':
+      return ['view'];
     default:
       return [];
   }
@@ -212,23 +228,14 @@ function navigateToEditPage() {
 async function updatePlacementDriveStatus(action) {
   errorMessage.value = '';
 
-  if (!['close', 'reopen'].includes(action)) {
-    console.error(`Unknown action specified:${action}`);
-    return;
-  }
-
   try {
     const userRole = authStore.user.role.toLowerCase();
-    const url = `/api/${userRole}/placement-drives/${placementDrive.value.id}/${action}`;
-    const response = await fetch(url, { method: 'POST', credentials: 'include' });
-    const data = await response.json();
-
-    if (!response.ok) {
-      errorMessage.value = data.errors;
-      return;
-    }
-
-    placementDrive.value = data.data.placement_drive;
+    const newPlacementDrive = await modifyPlacementDriveStatus(
+      userRole,
+      placementDrive.value.id,
+      action,
+    );
+    placementDrive.value = newPlacementDrive;
   } catch (error) {
     console.error(error);
     errorMessage.value = 'Error while modifying placement drive';
@@ -260,11 +267,13 @@ watchEffect(async () => {
     :mode="mode"
     :loading="loading"
     :show-applications-count="mode === 'view'"
-    :allowed-actions="allowedActions"
+    :allowed-actions="allowedActionsForPlacementDrive"
     @save="saveEditedPlacementDrive"
     @edit="navigateToEditPage"
     @close="updatePlacementDriveStatus('close')"
     @reopen="updatePlacementDriveStatus('reopen')"
+    @approve="updatePlacementDriveStatus('approve')"
+    @decline="updatePlacementDriveStatus('decline')"
     @back="goBack"
   />
 
@@ -279,7 +288,7 @@ watchEffect(async () => {
   <ApplicationsTable
     v-if="placementDrive && mode === 'view'"
     :applications="applications"
-    :actions="['view', 'shortlist', 'select', 'reject']"
+    :actions="allowedActionsForApplication"
     :disable-actions-button="placementDrive.status !== 'active'"
     @shortlist="(applicationId) => updateApplicationStatus(applicationId, 'shortlist')"
     @select="(applicationId) => updateApplicationStatus(applicationId, 'select')"

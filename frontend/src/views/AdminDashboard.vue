@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import PlacementDriveTable from '@/components/PlacementDriveTable.vue';
+import { modifyPlacementDriveStatus } from '@/common/apiFunctions';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -82,33 +83,23 @@ async function loadPlacementDrives() {
     errorMessage.value = 'Unable to load placement drives';
   }
 }
-async function modifyPlacementDriveStatus(placementDriveId, action) {
-  const actions = ['approve', 'decline'];
-  // TODO: Add close action
-  if (actions.indexOf(action) === -1) {
-    console.error(`Action should be one of ${actions}, but is ${action}`);
-    return;
-  }
 
-  const url = `/api/admin/placement-drives/${placementDriveId}/${action}`;
+async function modifyPlacementDrive(placementDriveId, action) {
   try {
-    const response = await fetch(url, { method: 'POST', credentials: 'include' });
-    const data = await response.json();
-    if (!response.ok) {
-      errorMessage.value = data.errors;
-      return;
-    }
-    const placementDrive = placementDrives.value.find(
-      (placementDrive) => placementDrive.id === placementDriveId,
+    const userRole = authStore.user.role.toLowerCase();
+    const newPlacementDrive = await modifyPlacementDriveStatus(userRole, placementDriveId, action);
+    const existingPlacementDrive = placementDrives.value.find(
+      (pd) => pd.id === newPlacementDrive.id,
     );
-
-    if (placementDrive) {
-      placementDrive.status = data.data.status;
-    }
+    if (existingPlacementDrive) Object.assign(existingPlacementDrive, newPlacementDrive);
   } catch (error) {
     console.error(error);
     errorMessage.value = `Unable to ${action} placement drive`;
   }
+}
+
+async function viewPlacementDrive(placementDriveId) {
+  router.push(`/placement-drives/${placementDriveId}`);
 }
 onMounted(() => {
   authStore.loadUser();
@@ -227,14 +218,17 @@ onMounted(() => {
     <div class="mt-5">
       <div class="card shadow-sm">
         <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="card-title mb-0"><i class="fas fa-briefcase"></i> Placement Drives</h5>
+          <h5 class="card-title mb-0">Placement Drives</h5>
         </div>
         <PlacementDriveTable
           :placement-drives="placementDrives"
-          :actions="['approve', 'decline', 'close', 'reopen', 'edit', 'delete', 'view']"
+          :actions="['approve', 'decline', 'reopen', 'close', 'delete', 'view']"
           :show-company="true"
-          @approve="(placementDriveId) => modifyPlacementDriveStatus(placementDriveId, 'approve')"
-          @decline="(placementDriveId) => modifyPlacementDriveStatus(placementDriveId, 'decline')"
+          @approve="(placementDriveId) => modifyPlacementDrive(placementDriveId, 'approve')"
+          @decline="(placementDriveId) => modifyPlacementDrive(placementDriveId, 'decline')"
+          @close="(placementDriveId) => modifyPlacementDrive(placementDriveId, 'close')"
+          @reopen="(placementDriveId) => modifyPlacementDrive(placementDriveId, 'reopen')"
+          @view="viewPlacementDrive"
         />
       </div>
     </div>

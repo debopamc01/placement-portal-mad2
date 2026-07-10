@@ -4,6 +4,7 @@ from typing import Sequence
 from flask import Blueprint, Response, request
 from flask_login import login_required
 
+from backend_app.models.job_application import JobApplication
 from backend_app.models.company import Company
 from backend_app.models.model_enums import (
     CompanyApprovalStatus,
@@ -100,7 +101,7 @@ def blacklist_company(company_id: int):
 @role_required(UserRole.ADMIN)
 @admin_bp.post("/placement-drives/<int:placement_drive_id>/approve")
 def approve_placement_drive(placement_drive_id: int):
-    placement_drive = db.session.scalar(
+    placement_drive: PlacementDrive | None = db.session.scalar(
         db.select(PlacementDrive).where(
             PlacementDrive.id == placement_drive_id,
         )
@@ -110,15 +111,15 @@ def approve_placement_drive(placement_drive_id: int):
             errors="No placement drive found with the specified id",
             status=HTTPStatus.NOT_FOUND,
         )
+    if not placement_drive.company.approval_status == CompanyApprovalStatus.APPROVED:
+        return error_response(
+            errors="Can not approve placement drive for unapproved company",
+            status=HTTPStatus.BAD_REQUEST,
+        )
     placement_drive.status = PlacementDriveStatus.ACTIVE
     try:
         db.session.commit()
-        return success_response(
-            data={
-                "placement_drive_id": placement_drive.id,
-                "status": placement_drive.status.value,
-            }
-        )
+        return success_response(data={"placement_drive": placement_drive.to_dict()})
     except Exception as e:
         db.session.rollback()
         return error_response(errors=str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR)
@@ -128,7 +129,7 @@ def approve_placement_drive(placement_drive_id: int):
 @role_required(UserRole.ADMIN)
 @admin_bp.post("/placement-drives/<int:placement_drive_id>/decline")
 def decline_placement_drive(placement_drive_id: int):
-    placement_drive = db.session.scalar(
+    placement_drive: PlacementDrive | None = db.session.scalar(
         db.select(PlacementDrive).where(
             PlacementDrive.id == placement_drive_id,
         )
@@ -138,15 +139,71 @@ def decline_placement_drive(placement_drive_id: int):
             errors="No placement drive found with the specified id",
             status=HTTPStatus.NOT_FOUND,
         )
+    if not placement_drive.company.approval_status == CompanyApprovalStatus.APPROVED:
+        return error_response(
+            errors="Can not decline placement drive for unapproved company",
+            status=HTTPStatus.BAD_REQUEST,
+        )
     placement_drive.status = PlacementDriveStatus.DECLINED
     try:
         db.session.commit()
-        return success_response(
-            data={
-                "placement_drive_id": placement_drive.id,
-                "status": placement_drive.status.value,
-            }
+        return success_response(data={"placement_drive": placement_drive.to_dict()})
+    except Exception as e:
+        db.session.rollback()
+        return error_response(errors=str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR)
+
+
+@login_required
+@role_required(UserRole.ADMIN)
+@admin_bp.post("/placement-drives/<int:placement_drive_id>/reopen")
+def reopen_placement_drive(placement_drive_id: int):
+    placement_drive: PlacementDrive | None = db.session.scalar(
+        db.select(PlacementDrive).where(
+            PlacementDrive.id == placement_drive_id,
         )
+    )
+    if placement_drive is None:
+        return error_response(
+            errors="No placement drive found with the specified id",
+            status=HTTPStatus.NOT_FOUND,
+        )
+    if not placement_drive.company.approval_status == CompanyApprovalStatus.APPROVED:
+        return error_response(
+            errors="Can not reopen placement drive for unapproved company",
+            status=HTTPStatus.BAD_REQUEST,
+        )
+    placement_drive.status = PlacementDriveStatus.PENDING
+    try:
+        db.session.commit()
+        return success_response(data={"placement_drive": placement_drive.to_dict()})
+    except Exception as e:
+        db.session.rollback()
+        return error_response(errors=str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR)
+
+
+@login_required
+@role_required(UserRole.ADMIN)
+@admin_bp.post("/placement-drives/<int:placement_drive_id>/close")
+def close_placement_drive(placement_drive_id: int):
+    placement_drive: PlacementDrive | None = db.session.scalar(
+        db.select(PlacementDrive).where(
+            PlacementDrive.id == placement_drive_id,
+        )
+    )
+    if placement_drive is None:
+        return error_response(
+            errors="No placement drive found with the specified id",
+            status=HTTPStatus.NOT_FOUND,
+        )
+    if not placement_drive.company.approval_status == CompanyApprovalStatus.APPROVED:
+        return error_response(
+            errors="Can not modify placement drive for unapproved company",
+            status=HTTPStatus.BAD_REQUEST,
+        )
+    placement_drive.status = PlacementDriveStatus.CLOSED
+    try:
+        db.session.commit()
+        return success_response(data={"placement_drive": placement_drive.to_dict()})
     except Exception as e:
         db.session.rollback()
         return error_response(errors=str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR)
@@ -185,6 +242,21 @@ def get_placement_drives():
         return error_response(errors=str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
+@admin_bp.get("/placement-drives/<int:drive_id>")
+@login_required
+@role_required(UserRole.ADMIN)
+def get_placement_drive(drive_id: int):
+
+    placement_drive: PlacementDrive | None = db.session.scalar(
+        db.select(PlacementDrive).where(PlacementDrive.id == drive_id)
+    )
+    if placement_drive is None:
+        return error_response(
+            errors="Placement drive not found", status=HTTPStatus.NOT_FOUND
+        )
+    return success_response(data={"placement_drive": placement_drive.to_dict()})
+
+
 @admin_bp.get("/companies")
 @login_required
 @role_required(UserRole.ADMIN)
@@ -194,3 +266,46 @@ def get_companies():
     return success_response(
         data={"companies": [company.to_dict() for company in companies]}
     )
+
+
+@admin_bp.get("/placement-drives/<int:drive_id>/applications")
+@login_required
+@role_required(UserRole.ADMIN)
+def get_applications_for_placement_drive(drive_id: int):
+    placement_drive: PlacementDrive | None = db.session.scalar(
+        db.select(PlacementDrive).where(
+            PlacementDrive.id == drive_id,
+        )
+    )
+
+    if placement_drive is None:
+        return error_response(
+            errors="No placement drive found with the specified id",
+            status=HTTPStatus.NOT_FOUND,
+        )
+
+    applications = sorted(
+        placement_drive.applications, key=lambda application: application.id
+    )
+
+    return success_response(
+        data={"applications": [app.to_dict() for app in applications]}
+    )
+
+
+@admin_bp.get("/applications/<int:app_id>")
+@login_required
+@role_required(UserRole.ADMIN)
+def get_job_application(app_id: int):
+    application: JobApplication | None = db.session.scalar(
+        db.select(JobApplication).where(
+            JobApplication.id == app_id,
+        )
+    )
+
+    if not application:
+        return error_response(
+            errors="No job application found with the specified id",
+            status=HTTPStatus.NOT_FOUND,
+        )
+    return success_response(data={"application": application.to_dict()})
