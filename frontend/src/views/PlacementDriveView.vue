@@ -16,11 +16,10 @@ const loading = ref(false);
 
 const placementDrive = ref(null);
 const applications = ref([]);
+const role = computed(() => authStore.user?.role?.toLowerCase() ?? '');
 
 const allowedActionsForPlacementDrive = computed(() => {
-  const role = authStore.user?.role?.toLowerCase();
-
-  switch (role) {
+  switch (role.value) {
     case 'admin':
       return ['approve', 'decline', 'close', 'reopen', 'edit', 'delete'];
     case 'company':
@@ -33,9 +32,7 @@ const allowedActionsForPlacementDrive = computed(() => {
 });
 
 const allowedActionsForApplication = computed(() => {
-  const role = authStore.user?.role?.toLowerCase();
-
-  switch (role) {
+  switch (role.value) {
     case 'admin':
       return ['view'];
     case 'company':
@@ -67,8 +64,7 @@ async function goBack() {
 async function fetchPlacementDriveDetails(placementDriveId) {
   errorMessage.value = '';
   try {
-    const userRole = authStore.user.role.toLowerCase();
-    const url = `/api/${userRole}/placement-drives/${placementDriveId}`;
+    const url = `/api/${role.value}/placement-drives/${placementDriveId}`;
     const response = await fetch(url, {
       credentials: 'include',
     });
@@ -88,8 +84,7 @@ async function fetchPlacementDriveDetails(placementDriveId) {
 async function fetchApplications(placementDriveId) {
   errorMessage.value = '';
   try {
-    const userRole = authStore.user.role.toLowerCase();
-    const url = `/api/${userRole}/placement-drives/${placementDriveId}/applications`;
+    const url = `/api/${role.value}/placement-drives/${placementDriveId}/applications`;
     const response = await fetch(url, {
       credentials: 'include',
     });
@@ -113,8 +108,7 @@ async function updateApplicationStatus(applicationId, applicationAction) {
   }
   errorMessage.value = '';
   try {
-    const userRole = authStore.user.role.toLowerCase();
-    const url = `/api/${userRole}/applications/${applicationId}/${applicationAction}`;
+    const url = `/api/${role.value}/applications/${applicationId}/${applicationAction}`;
     const response = await fetch(url, {
       method: 'POST',
       credentials: 'include',
@@ -229,9 +223,8 @@ async function updatePlacementDriveStatus(action) {
   errorMessage.value = '';
 
   try {
-    const userRole = authStore.user.role.toLowerCase();
     const newPlacementDrive = await modifyPlacementDriveStatus(
-      userRole,
+      role.value,
       placementDrive.value.id,
       action,
     );
@@ -242,12 +235,43 @@ async function updatePlacementDriveStatus(action) {
   }
 }
 
+async function applyToPlacementDrive() {
+  errorMessage.value = '';
+  try {
+    // TODO: Block duplicate application
+
+    const url = '/api/student/applications';
+    const payload = { placement_drive_id: placementDrive.value.id };
+    const response = await fetch(url, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      errorMessage.value = 'Unable to apply to the placement drive';
+      return;
+    }
+
+    // TODO: Fix the following
+    placementDrive.value.has_applied = true;
+    placementDrive.value.application_status = data.data.JobApplication.status;
+  } catch (error) {
+    errorMessage.value = error;
+    console.log(error);
+  }
+}
+
 watchEffect(async () => {
   if (!authStore.user) await authStore.loadUser();
   if (props.mode !== 'create') {
     await fetchPlacementDriveDetails(route.params.id);
     if (props.mode !== 'edit') {
-      await fetchApplications(route.params.id);
+      if (role.value !== 'student') await fetchApplications(route.params.id);
     }
   }
 });
@@ -275,6 +299,7 @@ watchEffect(async () => {
     @approve="updatePlacementDriveStatus('approve')"
     @decline="updatePlacementDriveStatus('decline')"
     @back="goBack"
+    @apply="applyToPlacementDrive"
   />
 
   <div v-else-if="errorMessage" class="alert alert-danger">
@@ -283,10 +308,10 @@ watchEffect(async () => {
 
   <div v-else class="text-center mt-5">Loading...</div>
 
-  <h3 class="text-center mt-2" v-if="mode === 'view'">Applications</h3>
+  <h3 class="text-center mt-2" v-if="mode === 'view' && role !== 'student'">Applications</h3>
 
   <ApplicationsTable
-    v-if="placementDrive && mode === 'view'"
+    v-if="placementDrive && mode === 'view' && role !== 'student'"
     :applications="applications"
     :actions="allowedActionsForApplication"
     :disable-actions-button="placementDrive.status !== 'active'"

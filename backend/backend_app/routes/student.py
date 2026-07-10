@@ -95,3 +95,18 @@ def get_active_placement_drives():
         placement_drive_dict["application_status"] = application_status
         active_placement_drives_dicts.append(placement_drive_dict)
     return success_response(data={"placement_drives": active_placement_drives_dicts})
+
+
+@student_bp.get("/placement-drives/<int:drive_id>")
+@login_required
+@role_required(UserRole.STUDENT)
+def get_placement_drive(drive_id: int):
+
+    placement_drive: PlacementDrive | None = db.session.scalar(
+        db.select(PlacementDrive).where(PlacementDrive.id == drive_id)
+    )
+    if placement_drive is None:
+        return error_response(
+            errors="Placement drive not found", status=HTTPStatus.NOT_FOUND
+        )
+    return success_response(data={"placement_drive": placement_drive.to_dict()})

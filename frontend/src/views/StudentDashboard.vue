@@ -67,6 +67,9 @@ async function applyToPlacementDrive(placementDriveId) {
     console.log(error);
   }
 }
+async function viewPlacementDrive(placementDriveId) {
+  router.push(`/placement-drives/${placementDriveId}`);
+}
 onMounted(() => {
   authStore.loadUser();
   loadPlacementDrives();
@@ -99,6 +102,7 @@ onMounted(() => {
       :show-company="true"
       :actions="['view', 'apply']"
       @apply="applyToPlacementDrive"
+      @view="viewPlacementDrive"
     />
   </div>
 </template>
