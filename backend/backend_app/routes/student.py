@@ -213,3 +213,29 @@ def get_profile():
     student: Student = current_user.student
 
     return success_response(data={"student": student.to_dict()})
+
+
+@student_bp.patch("/profile")
+@login_required
+@role_required(UserRole.STUDENT)
+def update_profile():
+    data = request.get_json()
+
+    name = data.get("name")
+    resume_filename = data.get("resume_filename")
+    description = data.get("description")
+
+    try:
+        student: Student | None = current_user.student
+        if not student:
+            return error_response(
+                errors="Student not found", status=HTTPStatus.NOT_FOUND
+            )
+        student.name = name
+        student.resume_filename = resume_filename
+        student.description = description
+        db.session.commit()
+        return success_response(data={"student": student.to_dict()})
+    except Exception as e:
+        db.session.rollback()
+        return error_response(errors=str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR)

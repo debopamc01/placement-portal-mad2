@@ -193,7 +193,7 @@ async function saveEditedPlacementDrive(drive) {
     };
     const url = `/api/company/placement-drives/${placementDrive.value.id}`;
     const response = await fetch(url, {
-      method: 'PATCH',
+      method: 'PUT',
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',

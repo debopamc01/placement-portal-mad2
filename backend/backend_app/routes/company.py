@@ -149,7 +149,7 @@ def get_placement_drive(drive_id: int):
     return success_response(data={"placement_drive": placement_drive.to_dict()})
 
 
-@company_bp.patch("/placement-drives/<int:drive_id>")
+@company_bp.put("/placement-drives/<int:drive_id>")
 @login_required
 @role_required(UserRole.COMPANY)
 def update_placement_drive(drive_id: int):

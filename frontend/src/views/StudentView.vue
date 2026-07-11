@@ -16,6 +16,7 @@ const props = defineProps({
   },
 });
 
+const mode = ref(props.mode);
 const errorMessage = ref('');
 const successMessage = ref('');
 const loading = ref(false);
@@ -67,10 +68,10 @@ async function fetchStudent() {
 
 async function saveStudent(updatedStudent) {
   errorMessage.value = '';
-
+  loading.value = true;
   try {
     const response = await fetch('/api/student/profile', {
-      method: 'PUT',
+      method: 'PATCH',
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
@@ -90,6 +91,9 @@ async function saveStudent(updatedStudent) {
   } catch (error) {
     console.error(error);
     errorMessage.value = 'Unable to update profile.';
+  } finally {
+    loading.value = false;
+    mode.value = 'view';
   }
 }
 
@@ -155,6 +159,10 @@ async function downloadResume() {
   }
 }
 
+async function editDetails() {
+  mode.value = 'edit';
+}
+
 function goBack() {
   router.back();
 }
@@ -184,11 +192,13 @@ watchEffect(async () => {
     v-if="student"
     :student="student"
     :mode="mode"
+    :loading="loading"
     :resume-permissions="resumePermissions"
     @save="saveStudent"
     @back="goBack"
     @uploadResume="uploadResume"
     @downloadResume="downloadResume"
+    @edit="editDetails"
   />
 
   <div v-else-if="loading" class="text-center mt-5">Loading...</div>

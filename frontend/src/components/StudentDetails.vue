@@ -27,11 +27,16 @@ const props = defineProps({
     default: [],
     // Options: upload | download
   },
+
+  loading: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const selectedResume = ref(null);
 
-const emit = defineEmits(['save', 'back', 'uploadResume', 'downloadResume']);
+const emit = defineEmits(['save', 'back', 'uploadResume', 'downloadResume', 'edit']);
 
 function onResumeSelected(event) {
   selectedResume.value = event.target.files[0] ?? null;
@@ -105,7 +110,7 @@ function submit() {
               v-model="localStudent.email"
               type="email"
               class="form-control"
-              :readonly="isReadOnly"
+              disabled
               required
             />
           </div>
@@ -184,12 +189,18 @@ function submit() {
               </div>
 
               <div v-if="resumePermissions.includes('upload')" class="input-group">
-                <input class="form-control" type="file" accept=".pdf" @change="onResumeSelected" />
+                <input
+                  class="form-control"
+                  type="file"
+                  accept=".pdf"
+                  :disabled="isReadOnly"
+                  @change="onResumeSelected"
+                />
 
                 <button
                   type="button"
                   class="btn btn-primary"
-                  :disabled="!selectedResume"
+                  :disabled="!selectedResume && isReadOnly"
                   @click="$emit('uploadResume', selectedResume)"
                 >
                   Upload
@@ -200,12 +211,23 @@ function submit() {
         </div>
       </div>
 
-      <div class="card-footer d-flex justify-content-between">
+      <div class="card-footer d-flex gap-2 flex-row-reverse justify-end">
         <button type="button" class="btn btn-secondary" @click="$emit('back')">
           {{ isReadOnly ? 'Back' : 'Cancel' }}
         </button>
 
-        <button v-if="mode === 'edit'" type="submit" class="btn btn-primary">Save Changes</button>
+        <button
+          v-if="mode !== 'edit'"
+          type="button"
+          class="btn btn-outline-primary"
+          @click="$emit('edit')"
+        >
+          Edit Profile
+        </button>
+
+        <button v-if="mode === 'edit'" type="submit" class="btn btn-primary" :disabled="loading">
+          {{ loading ? 'Saving' : 'Save Changes' }}
+        </button>
       </div>
     </div>
   </form>
