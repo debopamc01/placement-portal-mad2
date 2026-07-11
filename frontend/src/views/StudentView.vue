@@ -59,7 +59,6 @@ async function fetchStudent() {
     }
 
     student.value = data.data.student;
-    console.log(student.value);
   } catch (error) {
     console.error(error);
     errorMessage.value = 'Unable to load student profile';
@@ -113,6 +112,7 @@ async function uploadResume(file) {
       errorMessage.value = data.errors;
       return;
     }
+    student.value.resume_filename = data.data.resume_filename;
 
     successMessage.value = 'Resume uploaded successfully.';
   } catch (error) {

@@ -35,4 +35,5 @@ class Student(db.Model):
             "name": self.name,
             "description": self.description,
             "blacklisted": self.blacklisted,
+            "resume_filename":self.resume_filename
         }

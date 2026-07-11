@@ -12,6 +12,7 @@ const props = defineProps({
       degree: '',
       department: '',
       graduation_year: '',
+      resume_filename: '',
     }),
   },
 
@@ -44,6 +45,7 @@ const localStudent = reactive({
   degree: '',
   department: '',
   graduation_year: '',
+  resume_filename: '',
 });
 
 watch(
@@ -59,6 +61,7 @@ watch(
       degree: student.degree ?? '',
       department: student.department ?? '',
       graduation_year: student.graduation_year ?? '',
+      resume_filename: student.resume_filename ?? '',
     });
   },
   { immediate: true },
@@ -160,30 +163,38 @@ function submit() {
           </div>
 
           <div class="mb-4" v-if="resumePermissions.length > 0">
-            <label class="form-label fw-semibold"> Resume </label>
-            <div
-              class="d-flex align-items-center gap-3 flex-wrap"
-              v-if="resumePermissions.includes('upload')"
-            >
-              <input type="file" class="form-control" accept=".pdf" @change="onResumeSelected" />
-              <button
-                type="button"
-                class="btn btn-primary"
-                :disabled="!selectedResume"
-                @click="$emit('uploadResume', selectedResume)"
-              >
-                Upload
-              </button>
-            </div>
-            <!---TODO: Improve UI-->
-            <div v-if="resumePermissions.includes('download')">
-              <button
-                type="button"
-                class="btn btn-outline-primary"
-                @click="$emit('downloadResume')"
-              >
-                Download Resume
-              </button>
+            <label class="form-label fw-semibold">Resume</label>
+            <div class="col-md-5">
+              <div class="input-group mb-3">
+                <input
+                  class="form-control"
+                  :value="student.resume_filename || 'No resume uploaded'"
+                  readonly
+                />
+
+                <button
+                  v-if="resumePermissions.includes('download')"
+                  type="button"
+                  class="btn btn-outline-primary"
+                  :disabled="!student.resume_filename"
+                  @click="$emit('downloadResume')"
+                >
+                  Download
+                </button>
+              </div>
+
+              <div v-if="resumePermissions.includes('upload')" class="input-group">
+                <input class="form-control" type="file" accept=".pdf" @change="onResumeSelected" />
+
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  :disabled="!selectedResume"
+                  @click="$emit('uploadResume', selectedResume)"
+                >
+                  Upload
+                </button>
+              </div>
             </div>
           </div>
         </div>

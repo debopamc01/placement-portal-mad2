@@ -202,7 +202,6 @@ def download_resume():
     return send_from_directory(
         directory=UPLOAD_FOLDER_PATH,
         path=storage_filename,
-        # as_attachment=False,
         download_name=current_user.student.resume_filename,
     )
 
