@@ -1,19 +1,25 @@
 from datetime import datetime, timezone
 from http import HTTPStatus
+import os
 from typing import Sequence
-from zoneinfo import ZoneInfo
 
-from flask import Blueprint, request
+from flask import Blueprint, request, send_from_directory
 from flask_login import current_user, login_required
 
+from backend_app.models.student import Student
+from config import ALLOWED_RESUME_FILE_EXTENSIONS, UPLOAD_FOLDER_PATH
 from backend_app.models.job_application import JobApplication
 from backend_app.models.model_enums import PlacementDriveStatus, UserRole
 from backend_app.models.placement_drive import PlacementDrive
 from backend_app.utils.decorators import role_required
 from backend_app.utils.responses import error_response, success_response
 from backend_app.extensions import db
+from werkzeug.datastructures import FileStorage
+from werkzeug.utils import secure_filename
 
 student_bp = Blueprint("student", __name__, url_prefix="/api/student")
+
+STUDENT_RESUME_NAME_TEMPLATE = "Student_{user_id}.pdf"
 
 
 @login_required
@@ -110,3 +116,101 @@ def get_placement_drive(drive_id: int):
             errors="Placement drive not found", status=HTTPStatus.NOT_FOUND
         )
     return success_response(data={"placement_drive": placement_drive.to_dict()})
+
+
+allowed_mimetypes = {"pdf": "application/pdf"}
+
+
+def valid_file(file: FileStorage) -> bool:
+    filename = file.filename
+
+    if not filename:
+        return False
+
+    if not "." in filename:
+        return False
+
+    extension = filename.rsplit(".")[-1].lower()
+    return (
+        extension in ALLOWED_RESUME_FILE_EXTENSIONS
+        and file.mimetype == allowed_mimetypes[extension]
+    )
+
+
+@student_bp.post("/resume")
+@login_required
+@role_required(UserRole.STUDENT)
+def upload_resume():
+
+    try:
+        if "resume" not in request.files:
+            return error_response(
+                errors="Resume not uploaded",
+                status=HTTPStatus.BAD_REQUEST,
+            )
+
+        file = request.files.get("resume")
+
+        if not file or not file.filename:
+            return error_response(
+                errors="No file selected",
+                status=HTTPStatus.BAD_REQUEST,
+            )
+
+        if not valid_file(file):
+            return error_response(
+                errors="Unsupported file type",
+                status=HTTPStatus.BAD_REQUEST,
+            )
+
+        storage_filename = STUDENT_RESUME_NAME_TEMPLATE.format(
+            user_id=current_user.student.id
+        )
+
+        filepath = os.path.join(UPLOAD_FOLDER_PATH, storage_filename)
+
+        file.save(filepath)
+
+        current_user.student.resume_filename = secure_filename(file.filename)
+
+        db.session.commit()
+
+        return success_response(
+            data={"resume_filename": current_user.student.resume_filename}
+        )
+
+    except Exception as e:
+        db.session.rollback()
+        return error_response(errors=str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR)
+
+
+@student_bp.get("/resume")
+@login_required
+@role_required(UserRole.STUDENT)
+def download_resume():
+
+    if current_user.student.resume_filename is None:
+        return error_response(
+            errors="Resume not available",
+            status=HTTPStatus.NOT_FOUND,
+        )
+
+    storage_filename = STUDENT_RESUME_NAME_TEMPLATE.format(
+        user_id=current_user.student.id
+    )
+
+    return send_from_directory(
+        directory=UPLOAD_FOLDER_PATH,
+        path=storage_filename,
+        # as_attachment=False,
+        download_name=current_user.student.resume_filename,
+    )
+
+
+@student_bp.get("/profile")
+@login_required
+@role_required(UserRole.STUDENT)
+def get_profile():
+    student: Student = current_user.student
+
+    return success_response(data={"student": student.to_dict()})

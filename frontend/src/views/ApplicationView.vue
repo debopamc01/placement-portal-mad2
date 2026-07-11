@@ -37,6 +37,54 @@ async function fetchApplication(applicationId) {
 function goBack() {
   router.back();
 }
+async function uploadResume(resume) {
+  errorMessage.value = '';
+  try {
+    const formData = new FormData();
+    formData.append('resume', resume);
+    const response = await fetch('/api/student/resume', {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      errorMessage.value = data.errors;
+      return;
+    }
+  } catch (error) {
+    console.error(error);
+    errorMessage.value = 'Unable to upload Resume';
+  }
+}
+async function downloadResume() {
+  errorMessage.value = '';
+  try {
+    const response = await fetch('/api/student/resume', {
+      credentials: 'include',
+    });
+    if (!response.ok) {
+      return;
+    }
+    const blob = await response.blob();
+
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+
+    a.href = url;
+
+    a.download = '';
+
+    a.click();
+
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error(error);
+    errorMessage.value = 'Download failed';
+  }
+}
 onMounted(async () => {
   await authStore.loadUser();
   await fetchApplication(route.params.id);
@@ -79,7 +127,14 @@ onMounted(async () => {
         </div>
       </div>
 
-      <StudentDetails :student="application.student" mode="view" @back="goBack" />
+      <StudentDetails
+        :student="application.student"
+        :mode="view"
+        :resumePermissions="['upload', 'download']"
+        @back="goBack"
+        @upload-resume="uploadResume"
+        @download-resume="downloadResume"
+      />
     </div>
   </template>
 </template>

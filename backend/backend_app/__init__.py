@@ -3,7 +3,14 @@ import os
 from flask import Flask
 from flask_cors import CORS
 
-from config import BASE_DIR, Config, ADMIN_EMAIL, ADMIN_PASSWORD
+from config import (
+    BASE_DIR,
+    DB_PATH,
+    UPLOAD_FOLDER_PATH,
+    Config,
+    ADMIN_EMAIL,
+    ADMIN_PASSWORD,
+)
 from backend_app.models.model_enums import UserRole
 from backend_app.extensions import db, login_manager
 from backend_app.routes.auth import auth_bp
@@ -29,7 +36,8 @@ def create_admin() -> None:
 
 
 def create_backend_app():
-    os.makedirs(os.path.join(BASE_DIR, "backend_app", "instance"), exist_ok=True)
+    os.makedirs(DB_PATH, exist_ok=True)
+    os.makedirs(UPLOAD_FOLDER_PATH, exist_ok=True)
     app = Flask(__name__)
 
     CORS(

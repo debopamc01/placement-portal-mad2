@@ -17,7 +17,7 @@ class Student(db.Model):
         ForeignKey("user.id", ondelete="CASCADE"), nullable=False, unique=True
     )
     name: Mapped[str] = mapped_column(nullable=False)
-    resume_url: Mapped[Optional[str]] = mapped_column(nullable=True)
+    resume_filename: Mapped[Optional[str]] = mapped_column(nullable=True)
     description: Mapped[Optional[str]] = mapped_column(nullable=True)
     blacklisted: Mapped[bool] = mapped_column(default=False, nullable=False)
     applications: Mapped[list[JobApplication]] = relationship(

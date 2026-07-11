@@ -7,6 +7,8 @@ import CompanyDashboard from '@/views/CompanyDashboard.vue';
 import StudentDashboard from '@/views/StudentDashboard.vue';
 import PlacementDriveView from '@/views/PlacementDriveView.vue';
 import ApplicationView from '@/views/ApplicationView.vue';
+import StudentView from '@/views/StudentView.vue';
+import { useAuthStore } from '@/stores/auth';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -65,6 +67,41 @@ const router = createRouter({
       path: '/applications/:id',
       name: 'application-view',
       component: ApplicationView,
+    },
+    {
+      path: '/profile',
+      redirect: () => {
+        const authStore = useAuthStore();
+        const userRole = authStore.user?.role?.toLowerCase();
+        if (userRole === 'student') return '/student/profile';
+        else if (userRole === 'company') return '/company/profile';
+        else return '/admin';
+      },
+    },
+    {
+      path: '/student/profile',
+      name: 'student-profile',
+      component: StudentView,
+    },
+    {
+      path: '/dashboard',
+      redirect: () => {
+        const authStore = useAuthStore();
+        const userRole = authStore.user?.role?.toLowerCase();
+        switch (userRole) {
+          case 'student':
+            return '/student';
+
+          case 'company':
+            return '/company';
+
+          case 'admin':
+            return '/admin';
+
+          default:
+            return '/login';
+        }
+      },
     },
   ],
 });

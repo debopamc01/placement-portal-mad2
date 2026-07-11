@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, watch } from 'vue';
+import { computed, ref, reactive, watch } from 'vue';
 
 const props = defineProps({
   student: {
@@ -17,11 +17,24 @@ const props = defineProps({
 
   mode: {
     type: String,
-    default: 'view', // view | edit
+    default: 'view',
+    // Options: view | edit
+  },
+
+  resumePermissions: {
+    type: Array,
+    default: [],
+    // Options: upload | download
   },
 });
 
-const emit = defineEmits(['save', 'back']);
+const selectedResume = ref(null);
+
+const emit = defineEmits(['save', 'back', 'uploadResume', 'downloadResume']);
+
+function onResumeSelected(event) {
+  selectedResume.value = event.target.files[0] ?? null;
+}
 
 const localStudent = reactive({
   name: '',
@@ -146,11 +159,32 @@ function submit() {
             />
           </div>
 
-          <!-- Placeholder for future resume upload -->
-          <div class="col-md-8 mb-3">
+          <div class="mb-4" v-if="resumePermissions.length > 0">
             <label class="form-label fw-semibold"> Resume </label>
-
-            <div class="form-control-plaintext text-muted">Resume upload coming soon.</div>
+            <div
+              class="d-flex align-items-center gap-3 flex-wrap"
+              v-if="resumePermissions.includes('upload')"
+            >
+              <input type="file" class="form-control" accept=".pdf" @change="onResumeSelected" />
+              <button
+                type="button"
+                class="btn btn-primary"
+                :disabled="!selectedResume"
+                @click="$emit('uploadResume', selectedResume)"
+              >
+                Upload
+              </button>
+            </div>
+            <!---TODO: Improve UI-->
+            <div v-if="resumePermissions.includes('download')">
+              <button
+                type="button"
+                class="btn btn-outline-primary"
+                @click="$emit('downloadResume')"
+              >
+                Download Resume
+              </button>
+            </div>
           </div>
         </div>
       </div>
