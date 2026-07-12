@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 
 import LoginView from '@/views/LoginView.vue';
 import AdminDashboard from '@/views/AdminDashboard.vue';
@@ -8,7 +9,7 @@ import StudentDashboard from '@/views/StudentDashboard.vue';
 import PlacementDriveView from '@/views/PlacementDriveView.vue';
 import ApplicationView from '@/views/ApplicationView.vue';
 import StudentView from '@/views/StudentView.vue';
-import { useAuthStore } from '@/stores/auth';
+import CompanyView from '@/views/CompanyView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -82,6 +83,18 @@ const router = createRouter({
       path: '/student/profile',
       name: 'student-profile',
       component: StudentView,
+    },
+    {
+      path: '/company/profile',
+      name: 'company-profile',
+      component: CompanyView,
+    },
+    {
+      path: '/companies/:id',
+      name: 'view-company',
+      component: CompanyView,
+      props: { mode: 'view' },
+      //TODO: update this
     },
     {
       path: '/dashboard',

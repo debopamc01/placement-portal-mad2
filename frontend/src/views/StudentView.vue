@@ -37,7 +37,7 @@ async function fetchStudent() {
   errorMessage.value = '';
 
   try {
-    let url;
+    let url = '';
 
     if (userRole.value === 'student') {
       url = '/api/student/profile';
@@ -194,6 +194,7 @@ watchEffect(async () => {
     :mode="mode"
     :loading="loading"
     :resume-permissions="resumePermissions"
+    :editProfilePermission="userRole === 'student'"
     @save="saveStudent"
     @back="goBack"
     @uploadResume="uploadResume"

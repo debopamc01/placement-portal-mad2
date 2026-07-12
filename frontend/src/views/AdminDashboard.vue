@@ -101,6 +101,10 @@ async function modifyPlacementDrive(placementDriveId, action) {
 async function viewPlacementDrive(placementDriveId) {
   router.push(`/placement-drives/${placementDriveId}`);
 }
+
+async function viewCompany(companyId) {
+  router.push(`/companies/${companyId}`);
+}
 onMounted(() => {
   authStore.loadUser();
   loadCompanies();
@@ -180,7 +184,9 @@ onMounted(() => {
               </button>
               <ul class="dropdown-menu">
                 <li>
-                  <button class="dropdown-item">View Details</button>
+                  <button class="dropdown-item" @click="viewCompany(company.id)">
+                    View Details
+                  </button>
                 </li>
                 <li v-if="company.approval_status !== 'approved'">
                   <button
@@ -192,7 +198,7 @@ onMounted(() => {
                 </li>
                 <li v-if="company.approval_status !== 'rejected'">
                   <button
-                    class="dropdown-item text-primary"
+                    class="dropdown-item text-warning"
                     @click="modify_company(company.id, 'reject')"
                   >
                     Reject

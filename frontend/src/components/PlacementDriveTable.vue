@@ -138,7 +138,7 @@ function jobApplicationStatusClass(status) {
             </li>
             <li
               v-if="
-                (!['active','closed'].includes(placementDrive.status)) &&
+                !['active', 'closed'].includes(placementDrive.status) &&
                 actions.includes('approve') &&
                 placementDrive.company.approval_status === 'approved'
               "
@@ -153,7 +153,7 @@ function jobApplicationStatusClass(status) {
 
             <li
               v-if="
-                (!['declined','closed'].includes(placementDrive.status)) &&
+                !['declined', 'closed'].includes(placementDrive.status) &&
                 actions.includes('decline') &&
                 placementDrive.company.approval_status === 'approved'
               "
@@ -199,11 +199,6 @@ function jobApplicationStatusClass(status) {
               </button>
             </li>
 
-            <li v-if="actions.includes('delete')">
-              <button class="dropdown-item text-danger" @click="emit('delete', placementDrive.id)">
-                Delete
-              </button>
-            </li>
             <li
               v-if="
                 actions.includes('apply') &&
@@ -213,6 +208,14 @@ function jobApplicationStatusClass(status) {
             >
               <button class="dropdown-item btn-primary" @click="emit('apply', placementDrive.id)">
                 Apply
+              </button>
+            </li>
+            <li v-if="actions.includes('delete')">
+              <hr class="dropdown-divider" />
+            </li>
+            <li v-if="actions.includes('delete')">
+              <button class="dropdown-item text-danger" @click="emit('delete', placementDrive.id)">
+                Delete
               </button>
             </li>
           </ul>

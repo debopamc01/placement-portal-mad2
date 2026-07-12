@@ -268,6 +268,22 @@ def get_companies():
     )
 
 
+@admin_bp.get("/companies/<int:company_id>")
+@login_required
+@role_required(UserRole.ADMIN)
+def get_company_by_id(company_id: int):
+    company: Company | None = db.session.scalar(
+        db.select(Company).where(Company.id == company_id)
+    )
+
+    if not company:
+        return error_response(
+            errors="No company exists with specified id", status=HTTPStatus.NOT_FOUND
+        )
+
+    return success_response(data={"company": company.to_dict()})
+
+
 @admin_bp.get("/placement-drives/<int:drive_id>/applications")
 @login_required
 @role_required(UserRole.ADMIN)
@@ -309,3 +325,28 @@ def get_job_application(app_id: int):
             status=HTTPStatus.NOT_FOUND,
         )
     return success_response(data={"application": application.to_dict()})
+
+
+@admin_bp.get("/companies/<int:company_id>/placement-drives")
+@login_required
+@role_required(UserRole.ADMIN)
+def get_placement_drives_for_company(company_id: int):
+    company: Company | None = db.session.scalar(
+        db.select(Company).where(Company.id == company_id)
+    )
+
+    if not company:
+        return error_response(
+            errors="No company exists with specified id", status=HTTPStatus.NOT_FOUND
+        )
+    placement_drives: Sequence[PlacementDrive] = db.session.scalars(
+        db.select(PlacementDrive).where(PlacementDrive.company_id == company_id)
+    ).all()
+
+    return success_response(
+        data={
+            "placement_drives": [
+                placement_drive.to_dict() for placement_drive in placement_drives
+            ]
+        }
+    )

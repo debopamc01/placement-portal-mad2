@@ -16,6 +16,7 @@ from backend_app.models.model_enums import (
     UserRole,
 )
 from backend_app.models.student import Student
+from backend_app.models.company import Company
 from backend_app.models.placement_drive import PlacementDrive
 from backend_app.utils.decorators import role_required
 from backend_app.utils.responses import error_response, success_response
@@ -362,3 +363,12 @@ def download_resume(student_id: int):
         path=storage_filename,
         download_name=student.resume_filename,
     )
+
+
+@company_bp.get("/profile")
+@login_required
+@role_required(UserRole.COMPANY)
+def get_profile():
+    company: Company = current_user.company
+
+    return success_response(data={"company": company.to_dict()})
