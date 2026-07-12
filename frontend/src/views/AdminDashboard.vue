@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, computed, watch, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import PlacementDriveTable from '@/components/PlacementDriveTable.vue';
@@ -7,6 +7,7 @@ import { modifyPlacementDriveStatus } from '@/common/apiFunctions';
 import StatusBadge from '@/components/StatusBadges.vue';
 import StudentsTable from '@/components/StudentsTable.vue';
 import ApplicationsTable from '@/components/ApplicationsTable.vue';
+import CompaniesTable from '@/components/CompaniesTable.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -16,6 +17,9 @@ const errorMessage = ref('');
 const placementDrives = ref([]);
 const students = ref([]);
 const applications = ref([]);
+const activeTab = ref('companies');
+const searchField = ref('');
+const searchValue = ref('');
 
 async function logout() {
   await authStore.logout();
@@ -169,6 +173,143 @@ async function viewApplicationDetails(applicationId) {
   }
 }
 
+const searchFields = computed(() => {
+  switch (activeTab.value) {
+    case 'students':
+      return [
+        { value: 'name', label: 'Name' },
+        { value: 'email', label: 'Email' },
+      ];
+
+    case 'companies':
+      return [
+        { value: 'name', label: 'Name' },
+        { value: 'email', label: 'Email' },
+        { value: 'approval_status', label: 'Approval Status' },
+      ];
+
+    case 'placement-drives':
+      return [
+        { value: 'job_title', label: 'Job Title' },
+        { value: 'status', label: 'Status' },
+        { value: 'company_name', label: 'Company Name' },
+      ];
+
+    case 'applications':
+      return [
+        { value: 'student_name', label: 'Student Name' },
+        // { value: 'company_name', label: 'Company Name' },
+        // TODO: Implement above
+        { value: 'status', label: 'Status' },
+      ];
+
+    default:
+      return [];
+  }
+});
+
+function clearSearch() {
+  searchField.value = '';
+  searchValue.value = '';
+}
+
+const filteredStudents = computed(() => {
+  if (!searchField.value || !searchValue.value) {
+    return students.value;
+  }
+
+  const searchString = searchValue.value.toLowerCase();
+
+  switch (searchField.value) {
+    case 'name':
+      return students.value.filter((student) => student.name.toLowerCase().includes(searchString));
+
+    case 'email':
+      return students.value.filter((student) => student.email.toLowerCase().includes(searchString));
+
+    default:
+      return students.value;
+  }
+});
+
+const filteredCompanies = computed(() => {
+  if (!searchField.value || !searchValue.value) {
+    return companies.value;
+  }
+
+  const searchString = searchValue.value.toLowerCase();
+
+  switch (searchField.value) {
+    case 'name':
+      return companies.value.filter((company) => company.name.toLowerCase().includes(searchString));
+
+    case 'email':
+      return companies.value.filter((company) =>
+        company.email.toLowerCase().includes(searchString),
+      );
+
+    case 'approval_status':
+      return companies.value.filter((company) =>
+        company.approval_status.toLowerCase().includes(searchString),
+      );
+
+    default:
+      return companies.value;
+  }
+});
+
+const filteredPlacementDrives = computed(() => {
+  if (!searchField.value || !searchValue.value) {
+    return placementDrives.value;
+  }
+  const searchString = searchValue.value.toLowerCase();
+
+  switch (searchField.value) {
+    case 'job_title':
+      return placementDrives.value.filter((pd) =>
+        pd.job_title.toLowerCase().includes(searchString),
+      );
+
+    case 'status':
+      return placementDrives.value.filter((pd) => pd.status.toLowerCase().includes(searchString));
+    case 'company_name':
+      return placementDrives.value.filter((pd) =>
+        pd.company.name.toLowerCase().includes(searchString),
+      );
+
+    default:
+      return placementDrives.value;
+  }
+});
+
+const filteredApplications = computed(() => {
+  if (!searchField.value || !searchValue.value) {
+    return applications.value;
+  }
+  const searchString = searchValue.value.toLowerCase();
+
+  switch (searchField.value) {
+    case 'student_name':
+      return applications.value.filter((app) =>
+        app.student.name.toLowerCase().includes(searchString),
+      );
+
+    case 'status':
+      return applications.value.filter((app) => app.status.toLowerCase().includes(searchString));
+    // case 'company_name':
+    //   return applications.value.filter((app) =>
+    //     app.company.name.toLowerCase().includes(searchString),
+    //   );
+
+    default:
+      return applications.value;
+  }
+});
+
+watch(activeTab, () => {
+  clearSearch();
+});
+
 onMounted(() => {
   authStore.loadUser();
   loadCompanies();
@@ -199,128 +340,146 @@ onMounted(() => {
         {{ authStore.user.role }}
       </p>
     </div>
-    <div class="card shadow-sm">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="card-title mb-0">Companies</h5>
-      </div>
-      <table class="table table-striped table-hover">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Website</th>
-            <th>Approval Status</th>
-            <th>Placement Drives</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
 
-        <tbody>
-          <tr v-for="company in companies" :key="company.id">
-            <td>{{ company.id }}</td>
-            <td>{{ company.name }}</td>
-            <td>{{ company.email }}</td>
-            <td>
-              <a :href="company.website" target="_blank">
-                {{ company.website }}
-              </a>
-            </td>
-            <td>
-              <StatusBadge :status="company.approval_status" :font-size="'fs-7'" />
-            </td>
-            <td>{{ company.placement_drive_ids.length }}</td>
-            <td>
-              <button
-                class="btn btn-sm btn-light dropdown-toggle"
-                type="button"
-                aria-expanded="false"
-                data-bs-toggle="dropdown"
-              >
-                Actions
-              </button>
-              <ul class="dropdown-menu">
-                <li>
-                  <button class="dropdown-item" @click="viewCompany(company.id)">
-                    View Details
-                  </button>
-                </li>
-                <li v-if="company.approval_status !== 'approved'">
-                  <button
-                    class="dropdown-item text-success"
-                    @click="modify_company(company.id, 'approve')"
-                  >
-                    Approve
-                  </button>
-                </li>
-                <li v-if="company.approval_status !== 'rejected'">
-                  <button
-                    class="dropdown-item text-warning"
-                    @click="modify_company(company.id, 'reject')"
-                  >
-                    Reject
-                  </button>
-                </li>
-                <li v-if="company.approval_status !== 'blacklisted'">
-                  <button
-                    class="dropdown-item text-danger"
-                    @click="modify_company(company.id, 'blacklist')"
-                  >
-                    Blacklist
-                  </button>
-                </li>
-                <li>
-                  <hr class="dropdown-divider" />
-                </li>
-                <li>
-                  <button class="dropdown-item text-danger" @click="deleteCompany">Delete</button>
-                </li>
-              </ul>
-            </td>
-          </tr>
-          <tr v-if="companies.length === 0">
-            <td colspan="7" class="text-center text-muted">No companies found</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <StudentsTable
-      :students="students"
-      :actions="['view', 'blacklist', 'delete']"
-      @view="viewStudent"
-    />
-
-    <div class="mt-5">
-      <div class="card shadow-sm">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="card-title mb-0">Placement Drives</h5>
+    <div class="row g-3 mb-4">
+      <div class="col-md-3">
+        <div class="card shadow-sm text-center">
+          <div class="card-body">
+            <h6 class="text-muted mb-1">Students</h6>
+            <h2 class="mb-0">{{ students.length }}</h2>
+          </div>
         </div>
-        <PlacementDriveTable
-          :placement-drives="placementDrives"
-          :actions="['approve', 'decline', 'reopen', 'close', 'delete', 'view']"
-          :show-company="true"
-          @approve="(placementDriveId) => modifyPlacementDrive(placementDriveId, 'approve')"
-          @decline="(placementDriveId) => modifyPlacementDrive(placementDriveId, 'decline')"
-          @close="(placementDriveId) => modifyPlacementDrive(placementDriveId, 'close')"
-          @reopen="(placementDriveId) => modifyPlacementDrive(placementDriveId, 'reopen')"
-          @view="viewPlacementDrive"
-        />
+      </div>
+
+      <div class="col-md-3">
+        <div class="card shadow-sm text-center">
+          <div class="card-body">
+            <h6 class="text-muted mb-1">Companies</h6>
+            <h2 class="mb-0">{{ companies.length }}</h2>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card shadow-sm text-center">
+          <div class="card-body">
+            <h6 class="text-muted mb-1">Placement Drives</h6>
+            <h2 class="mb-0">{{ placementDrives.length }}</h2>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card shadow-sm text-center">
+          <div class="card-body">
+            <h6 class="text-muted mb-1">Applications</h6>
+            <h2 class="mb-0">{{ applications.length }}</h2>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="mt-5">
-      <div class="card shadow-sm">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="card-title mb-0">Applications</h5>
-        </div>
-        <ApplicationsTable
-          :applications="applications"
-          :actions="['view']"
-          :disable-actions-button="false"
-          @view="viewApplicationDetails"
-        />
-      </div>
+    <div class="mb-4 d-flex justify-content-start gap-2">
+      <select v-model="searchField" class="form-select">
+        <option disabled value="">Search By</option>
+
+        <option v-for="field in searchFields" :key="field.value" :value="field.value">
+          {{ field.label }}
+        </option>
+      </select>
+
+      <input v-model="searchValue" class="form-control" placeholder="Search..." />
+
+      <button class="btn btn-primary">Search</button>
+
+      <button class="btn btn-secondary" @click="clearSearch">Clear</button>
     </div>
+
+    <ul class="nav nav-tabs mb-4">
+      <li class="nav-item">
+        <button
+          class="nav-link"
+          :class="{ active: activeTab === 'companies' }"
+          @click="activeTab = 'companies'"
+        >
+          Companies
+        </button>
+      </li>
+
+      <li class="nav-item">
+        <button
+          class="nav-link"
+          :class="{ active: activeTab === 'students' }"
+          @click="activeTab = 'students'"
+        >
+          Students
+        </button>
+      </li>
+
+      <li class="nav-item">
+        <button
+          class="nav-link"
+          :class="{ active: activeTab === 'placement-drives' }"
+          @click="activeTab = 'placement-drives'"
+        >
+          Placement Drives
+        </button>
+      </li>
+
+      <li class="nav-item">
+        <button
+          class="nav-link"
+          :class="{ active: activeTab === 'applications' }"
+          @click="activeTab = 'applications'"
+        >
+          Applications
+        </button>
+      </li>
+
+      <CompaniesTable
+        v-if="activeTab === 'companies'"
+        :companies="filteredCompanies"
+        :actions="['view', 'approve', 'reject', 'blacklist', 'delete']"
+        @view="viewCompany"
+        @approve="(companyId) => modify_company(companyId, 'approve')"
+        @reject="(companyId) => modify_company(companyId, 'reject')"
+        @blacklist="(companyId) => modify_company(companyId, 'blacklist')"
+      />
+
+      <StudentsTable
+        v-if="activeTab === 'students'"
+        :students="filteredStudents"
+        :actions="['view', 'blacklist', 'delete']"
+        @view="viewStudent"
+      />
+
+      <div class="container py-2">
+        <div class="mt-5" v-if="activeTab === 'placement-drives'">
+          <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5 class="card-title mb-0">Placement Drives</h5>
+            </div>
+            <PlacementDriveTable
+              :placement-drives="filteredPlacementDrives"
+              :actions="['approve', 'decline', 'reopen', 'close', 'delete', 'view']"
+              :show-company="true"
+              @approve="(placementDriveId) => modifyPlacementDrive(placementDriveId, 'approve')"
+              @decline="(placementDriveId) => modifyPlacementDrive(placementDriveId, 'decline')"
+              @close="(placementDriveId) => modifyPlacementDrive(placementDriveId, 'close')"
+              @reopen="(placementDriveId) => modifyPlacementDrive(placementDriveId, 'reopen')"
+              @view="viewPlacementDrive"
+            />
+          </div>
+        </div>
+      </div>
+
+      <ApplicationsTable
+        v-if="activeTab === 'applications'"
+        :applications="filteredApplications"
+        :actions="['view']"
+        :disable-actions-button="false"
+        @view="viewApplicationDetails"
+      />
+    </ul>
   </div>
 </template>
