@@ -403,3 +403,16 @@ def download_resume(student_id: int):
         path=storage_filename,
         download_name=student.resume_filename,
     )
+
+
+@admin_bp.get("/applications")
+@login_required
+@role_required(UserRole.ADMIN)
+def get_applications():
+    applications: Sequence[JobApplication] = db.session.scalars(
+        db.select(JobApplication)
+    ).all()
+
+    return success_response(
+        data={"applications": [application.to_dict() for application in applications]}
+    )

@@ -6,6 +6,7 @@ import PlacementDriveTable from '@/components/PlacementDriveTable.vue';
 import { modifyPlacementDriveStatus } from '@/common/apiFunctions';
 import StatusBadge from '@/components/StatusBadges.vue';
 import StudentsTable from '@/components/StudentsTable.vue';
+import ApplicationsTable from '@/components/ApplicationsTable.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -14,6 +15,7 @@ const companies = ref([]);
 const errorMessage = ref('');
 const placementDrives = ref([]);
 const students = ref([]);
+const applications = ref([]);
 
 async function logout() {
   await authStore.logout();
@@ -127,18 +129,52 @@ async function fetchStudents() {
     students.value = data.data.students;
   } catch (error) {
     console.error(error);
-    errorMessage.value = 'Unable to fetch students.';
+    errorMessage.value = 'Unable to fetch students';
   }
 }
 
 async function viewStudent(studentId) {
   router.push(`/students/${studentId}/profile`);
 }
+
+async function fetchApplications() {
+  errorMessage.value = '';
+
+  try {
+    const response = await fetch('/api/admin/applications', {
+      credentials: 'include',
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      errorMessage.value = data.errors;
+      return;
+    }
+
+    applications.value = data.data.applications;
+  } catch (error) {
+    console.error(error);
+    errorMessage.value = 'Unable to fetch applications';
+  }
+}
+
+async function viewApplicationDetails(applicationId) {
+  errorMessage.value = '';
+  try {
+    router.push(`/applications/${applicationId}`);
+  } catch (error) {
+    console.error(error);
+    errorMessage.value = `Unable to view application with id: ${applicationId}`;
+  }
+}
+
 onMounted(() => {
   authStore.loadUser();
   loadCompanies();
   loadPlacementDrives();
   fetchStudents();
+  fetchApplications();
 });
 </script>
 
@@ -269,6 +305,20 @@ onMounted(() => {
           @close="(placementDriveId) => modifyPlacementDrive(placementDriveId, 'close')"
           @reopen="(placementDriveId) => modifyPlacementDrive(placementDriveId, 'reopen')"
           @view="viewPlacementDrive"
+        />
+      </div>
+    </div>
+
+    <div class="mt-5">
+      <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0">Applications</h5>
+        </div>
+        <ApplicationsTable
+          :applications="applications"
+          :actions="['view']"
+          :disable-actions-button="false"
+          @view="viewApplicationDetails"
         />
       </div>
     </div>
