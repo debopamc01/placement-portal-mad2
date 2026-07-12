@@ -159,6 +159,8 @@ async function modifyCompanyApprovalStatus(action) {
       return;
     }
 
+    company.value.approval_status = data.data.status;
+
     if (company) {
       fetchPlacementDrives();
     }

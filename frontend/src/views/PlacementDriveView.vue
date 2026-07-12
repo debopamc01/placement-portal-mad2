@@ -295,7 +295,7 @@ watchEffect(async () => {
     :placement-drive="placementDrive"
     :mode="mode"
     :loading="loading"
-    :show-applications-count="mode === 'view'"
+    :show-applications-count="mode === 'view' && role !== 'student'"
     :allowed-actions="allowedActionsForPlacementDrive"
     @save="saveEditedPlacementDrive"
     @edit="navigateToEditPage"

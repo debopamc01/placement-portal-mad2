@@ -4,6 +4,10 @@ defineProps({
     type: String,
     required: true,
   },
+  fontSize: {
+    type: String,
+    default: 'fs-6',
+  },
 });
 
 const statusClasses = {
@@ -30,7 +34,7 @@ function badgeClass(status) {
 </script>
 
 <template>
-  <span class="badge fs-6" :class="badgeClass(status)">
+  <span class="badge" :class="[badgeClass(status), fontSize]">
     {{ status.toUpperCase() }}
   </span>
 </template>

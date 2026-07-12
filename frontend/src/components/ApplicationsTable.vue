@@ -51,7 +51,7 @@ const emit = defineEmits(['view', 'shortlist', 'select', 'reject']);
               </td>
 
               <td>
-                <StatusBadge :status="application.status" />
+                <StatusBadge :status="application.status" :font-size="'fs-7'" />
               </td>
 
               <td>

@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import PlacementDriveTable from '@/components/PlacementDriveTable.vue';
 import { modifyPlacementDriveStatus } from '@/common/apiFunctions';
+import StatusBadge from '@/components/StatusBadges.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -160,17 +161,8 @@ onMounted(() => {
                 {{ company.website }}
               </a>
             </td>
-            <td style="text-transform: uppercase">
-              <span
-                class="badge"
-                :class="{
-                  'bg-danger': ['rejected', 'blacklisted'].includes(company.approval_status),
-                  'bg-secondary': company.approval_status === 'pending',
-                  'bg-success': company.approval_status === 'approved',
-                }"
-              >
-                {{ company.approval_status }}
-              </span>
+            <td>
+              <StatusBadge :status="company.approval_status" :font-size="'fs-7'" />
             </td>
             <td>{{ company.placement_drive_ids.length }}</td>
             <td>

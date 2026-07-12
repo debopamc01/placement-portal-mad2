@@ -1,5 +1,6 @@
 <script setup>
 import { computed, reactive, watch } from 'vue';
+import StatusBadge from '@/components/StatusBadges.vue';
 
 const props = defineProps({
   company: {
@@ -64,10 +65,11 @@ function submit() {
 <template>
   <form @submit.prevent="submit">
     <div class="card shadow-sm">
-      <div class="card-header">
+      <div class="card-header d-flex justify-content-between align-items-center">
         <h4 class="mb-0">
           {{ mode === 'edit' ? 'Edit Company Details' : 'Company Details' }}
         </h4>
+        <StatusBadge v-if="mode !== 'edit'" :status="company.approval_status" />
       </div>
 
       <div class="card-body">
@@ -121,17 +123,19 @@ function submit() {
             Actions
           </button>
           <ul class="dropdown-menu">
-            <li v-if="allowedActions.includes('approve')">
+            <li v-if="allowedActions.includes('approve') && company.approval_status !== 'approved'">
               <button type="button" class="dropdown-item text-success" @click="$emit('approve')">
                 Approve
               </button>
             </li>
-            <li v-if="allowedActions.includes('reject')">
+            <li v-if="allowedActions.includes('reject') && company.approval_status !== 'rejected'">
               <button type="button" class="dropdown-item text-warning" @click="$emit('reject')">
                 Reject
               </button>
             </li>
-            <li v-if="allowedActions.includes('blacklist')">
+            <li
+              v-if="allowedActions.includes('blacklist') && company.approval_status !== 'blacklisted'"
+            >
               <button type="button" class="dropdown-item text-danger" @click="$emit('blacklist')">
                 Blacklist
               </button>

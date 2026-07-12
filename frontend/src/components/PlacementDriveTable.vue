@@ -1,4 +1,6 @@
 <script setup>
+import StatusBadge from '@/components/StatusBadges.vue';
+
 defineProps({
   placementDrives: {
     type: Array,
@@ -100,22 +102,15 @@ function jobApplicationStatusClass(status) {
 
         <td>{{ new Date(placementDrive.application_deadline).toLocaleString() }}</td>
 
-        <td v-if="showPlacementDriveStatus" style="text-transform: uppercase">
-          <span class="badge" :class="placementDriveStatusClass(placementDrive.status)">
-            {{ placementDrive.status }}
-          </span>
+        <td v-if="showPlacementDriveStatus">
+          <StatusBadge :status="placementDrive.status" :font-size="'fs-7'" />
         </td>
-        <!--- TODO: Make the above and the below fields dynamic-->
 
         <td v-if="!showApplicationStatus">{{ placementDrive.application_ids.length }}</td>
 
         <td v-if="showApplicationStatus" style="text-transform: uppercase">
-          <span
-            v-if="placementDrive.has_applied"
-            class="badge"
-            :class="jobApplicationStatusClass(placementDrive.application_status)"
-          >
-            {{ placementDrive.application_status }}
+          <span v-if="placementDrive.has_applied">
+            <StatusBadge :status="placementDrive.application_status" :font-size="'fs-7'" />
           </span>
           <span v-else class="badge bg-secondary">Not Applied</span>
         </td>
