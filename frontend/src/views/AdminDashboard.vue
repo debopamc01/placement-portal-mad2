@@ -5,6 +5,7 @@ import { useAuthStore } from '../stores/auth';
 import PlacementDriveTable from '@/components/PlacementDriveTable.vue';
 import { modifyPlacementDriveStatus } from '@/common/apiFunctions';
 import StatusBadge from '@/components/StatusBadges.vue';
+import StudentsTable from '@/components/StudentsTable.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -12,6 +13,7 @@ const authStore = useAuthStore();
 const companies = ref([]);
 const errorMessage = ref('');
 const placementDrives = ref([]);
+const students = ref([]);
 
 async function logout() {
   await authStore.logout();
@@ -106,10 +108,37 @@ async function viewPlacementDrive(placementDriveId) {
 async function viewCompany(companyId) {
   router.push(`/companies/${companyId}`);
 }
+
+async function fetchStudents() {
+  errorMessage.value = '';
+
+  try {
+    const response = await fetch('/api/admin/students', {
+      credentials: 'include',
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      errorMessage.value = data.errors;
+      return;
+    }
+
+    students.value = data.data.students;
+  } catch (error) {
+    console.error(error);
+    errorMessage.value = 'Unable to fetch students.';
+  }
+}
+
+async function viewStudent(studentId) {
+  router.push(`/students/${studentId}/profile`);
+}
 onMounted(() => {
   authStore.loadUser();
   loadCompanies();
   loadPlacementDrives();
+  fetchStudents();
 });
 </script>
 
@@ -136,7 +165,7 @@ onMounted(() => {
     </div>
     <div class="card shadow-sm">
       <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="card-title mb-0"><i class="fas fa-briefcase"></i> Companies</h5>
+        <h5 class="card-title mb-0">Companies</h5>
       </div>
       <table class="table table-striped table-hover">
         <thead>
@@ -204,6 +233,12 @@ onMounted(() => {
                     Blacklist
                   </button>
                 </li>
+                <li>
+                  <hr class="dropdown-divider" />
+                </li>
+                <li>
+                  <button class="dropdown-item text-danger" @click="deleteCompany">Delete</button>
+                </li>
               </ul>
             </td>
           </tr>
@@ -213,6 +248,13 @@ onMounted(() => {
         </tbody>
       </table>
     </div>
+
+    <StudentsTable
+      :students="students"
+      :actions="['view', 'blacklist', 'delete']"
+      @view="viewStudent"
+    />
+
     <div class="mt-5">
       <div class="card shadow-sm">
         <div class="card-header d-flex justify-content-between align-items-center">

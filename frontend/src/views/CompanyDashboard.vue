@@ -87,7 +87,7 @@ onMounted(() => {
 
     <div class="card shadow-sm">
       <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="card-title mb-0"><i class="fas fa-briefcase"></i> Placement Drives</h5>
+        <h5 class="card-title mb-0">Placement Drives</h5>
         <button class="btn btn-outline-primary" @click="router.push('/placement-drives/create')">
           Create New Placement Drive
         </button>

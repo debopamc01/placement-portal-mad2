@@ -1,9 +1,12 @@
 from http import HTTPStatus
 from typing import Sequence
 
-from flask import Blueprint, Response, request
+from flask import Blueprint, Response, request, send_from_directory
 from flask_login import login_required
 
+from backend_app.routes.student import STUDENT_RESUME_NAME_TEMPLATE
+from config import UPLOAD_FOLDER_PATH
+from backend_app.models.student import Student
 from backend_app.models.job_application import JobApplication
 from backend_app.models.company import Company
 from backend_app.models.model_enums import (
@@ -349,4 +352,54 @@ def get_placement_drives_for_company(company_id: int):
                 placement_drive.to_dict() for placement_drive in placement_drives
             ]
         }
+    )
+
+
+@admin_bp.get("/students")
+@login_required
+@role_required(UserRole.ADMIN)
+def get_students():
+    students: Sequence[Student] = db.session.scalars(db.select(Student)).all()
+
+    return success_response(
+        data={"students": [student.to_dict() for student in students]}
+    )
+
+
+@admin_bp.get("/students/<int:student_id>")
+@login_required
+@role_required(UserRole.ADMIN)
+def get_student_by_id(student_id: int):
+    student: Student | None = db.session.scalar(
+        db.select(Student).where(Student.id == student_id)
+    )
+
+    if not student:
+        return error_response(
+            errors="No student available with specified id", status=HTTPStatus.NOT_FOUND
+        )
+
+    return success_response(data={"student": student.to_dict()})
+
+
+@admin_bp.get("/students/<int:student_id>/resume")
+@login_required
+@role_required(UserRole.ADMIN)
+def download_resume(student_id: int):
+
+    student: Student | None = db.session.scalar(
+        db.select(Student).where(Student.id == student_id)
+    )
+
+    if not student:
+        return error_response(
+            errors="No student found with specified id", status=HTTPStatus.NOT_FOUND
+        )
+
+    storage_filename = STUDENT_RESUME_NAME_TEMPLATE.format(user_id=student.id)
+
+    return send_from_directory(
+        directory=UPLOAD_FOLDER_PATH,
+        path=storage_filename,
+        download_name=student.resume_filename,
     )

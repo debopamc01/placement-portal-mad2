@@ -85,6 +85,11 @@ const router = createRouter({
       component: StudentView,
     },
     {
+      path: '/students/:id/profile',
+      name: 'student-profile',
+      component: StudentView,
+    },
+    {
       path: '/company/profile',
       name: 'company-profile',
       component: CompanyView,

@@ -38,44 +38,6 @@ const emit = defineEmits([
   'view',
   'apply',
 ]);
-
-function placementDriveStatusClass(status) {
-  switch (status) {
-    case 'pending':
-      return 'bg-secondary';
-
-    case 'active':
-      return 'bg-success';
-
-    case 'closed':
-      return 'bg-dark';
-
-    case 'declined':
-      return 'bg-danger';
-
-    default:
-      return 'bg-light text-dark';
-  }
-}
-
-function jobApplicationStatusClass(status) {
-  switch (status) {
-    case 'applied':
-      return 'bg-primary';
-
-    case 'shortlisted':
-      return 'bg-warning text-dark';
-
-    case 'selected':
-      return 'bg-success';
-
-    case 'rejected':
-      return 'bg-danger';
-
-    default:
-      return 'bg-secondary';
-  }
-}
 </script>
 
 <template>
