@@ -28,6 +28,11 @@ const props = defineProps({
     // Options: upload | download
   },
 
+  editProfilePermission: {
+    type: Boolean,
+    default: false,
+  },
+
   loading: {
     type: Boolean,
     default: false,
@@ -217,7 +222,7 @@ function submit() {
         </button>
 
         <button
-          v-if="mode !== 'edit'"
+          v-if="mode !== 'edit' && editProfilePermission"
           type="button"
           class="btn btn-outline-primary"
           @click="$emit('edit')"

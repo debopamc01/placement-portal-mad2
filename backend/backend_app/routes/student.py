@@ -239,3 +239,49 @@ def update_profile():
     except Exception as e:
         db.session.rollback()
         return error_response(errors=str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR)
+
+
+@student_bp.get("/placement-drives/<int:placement_drive_id>/applications")
+@login_required
+@role_required(UserRole.STUDENT)
+def get_application_for_placement_drive(placement_drive_id: int):
+
+    placement_drive: PlacementDrive | None = db.session.scalar(
+        db.select(PlacementDrive).where(PlacementDrive.id == placement_drive_id)
+    )
+
+    if not placement_drive:
+        return error_response(
+            errors="No placement drive exists for the specified id",
+            status=HTTPStatus.NOT_FOUND,
+        )
+
+    application: JobApplication | None = db.session.scalar(
+        db.select(JobApplication).where(
+            JobApplication.student_id == current_user.student.id,
+            JobApplication.placement_drive_id == placement_drive_id,
+        )
+    )
+
+    return success_response(
+        data={"applications": [application.to_dict()] if application else None}
+    )
+
+
+@student_bp.get("/applications/<int:application_id>")
+@login_required
+@role_required(UserRole.STUDENT)
+def get_application_by_id(application_id: int):
+    application: JobApplication | None = db.session.scalar(
+        db.select(JobApplication).where(
+            JobApplication.id == application_id,
+            JobApplication.student_id == current_user.student.id,
+        )
+    )
+
+    if not application:
+        return error_response(
+            errors="No application exists or user is not authorized",
+            status=HTTPStatus.NOT_FOUND,
+        )
+    return success_response(data={"application": application.to_dict()})

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useRoute, useRouter } from 'vue-router';
 import StatusBadge from '@/components/StatusBadges.vue';
@@ -12,11 +12,12 @@ const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 
+const userRole = ref(authStore.user.role.toLowerCase());
+
 async function fetchApplication(applicationId) {
   errorMessage.value = '';
   try {
-    const userRole = authStore.user.role.toLowerCase();
-    const url = `/api/${userRole}/applications/${applicationId}`;
+    const url = `/api/${userRole.value}/applications/${applicationId}`;
     const response = await fetch(url, {
       credentials: 'include',
     });
@@ -37,52 +38,34 @@ async function fetchApplication(applicationId) {
 function goBack() {
   router.back();
 }
-async function uploadResume(resume) {
-  errorMessage.value = '';
-  try {
-    const formData = new FormData();
-    formData.append('resume', resume);
-    const response = await fetch('/api/student/resume', {
-      method: 'POST',
-      credentials: 'include',
-      body: formData,
-    });
-    const data = await response.json();
-
-    if (!response.ok) {
-      errorMessage.value = data.errors;
-      return;
-    }
-  } catch (error) {
-    console.error(error);
-    errorMessage.value = 'Unable to upload Resume';
-  }
-}
 async function downloadResume() {
   errorMessage.value = '';
+
   try {
-    const response = await fetch('/api/student/resume', {
+    if (userRole.value === 'student') return;
+    // Students are not supposed download Resume from here
+
+    const url = `/api/${userRole.value}/students/${application.value.student.id}/resume`;
+
+    const response = await fetch(url, {
       credentials: 'include',
     });
+
     if (!response.ok) {
+      errorMessage.value = 'Unable to download resume.';
       return;
     }
+
     const blob = await response.blob();
 
-    const url = URL.createObjectURL(blob);
+    const objectUrl = URL.createObjectURL(blob);
 
-    const a = document.createElement('a');
+    window.open(objectUrl, '_blank');
 
-    a.href = url;
-
-    a.download = '';
-
-    a.click();
-
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 2000);
   } catch (error) {
     console.error(error);
-    errorMessage.value = 'Download failed';
+    errorMessage.value = 'Unable to download resume.';
   }
 }
 onMounted(async () => {
@@ -128,11 +111,11 @@ onMounted(async () => {
       </div>
 
       <StudentDetails
+        v-if="userRole !== 'student'"
         :student="application.student"
-        :mode="view"
-        :resumePermissions="['upload', 'download']"
+        :mode="'view'"
+        :resumePermissions="['download']"
         @back="goBack"
-        @upload-resume="uploadResume"
         @download-resume="downloadResume"
       />
     </div>

@@ -2,9 +2,11 @@ from datetime import datetime
 from http import HTTPStatus
 from zoneinfo import ZoneInfo
 
-from flask import Blueprint, request
+from flask import Blueprint, request, send_from_directory
 from flask_login import current_user, login_required
 
+from backend_app.routes.student import STUDENT_RESUME_NAME_TEMPLATE
+from config import UPLOAD_FOLDER_PATH
 from backend_app.models.job_application import JobApplication
 from backend_app.models.model_enums import (
     ApplicationAction,
@@ -13,6 +15,7 @@ from backend_app.models.model_enums import (
     PlacementDriveStatus,
     UserRole,
 )
+from backend_app.models.student import Student
 from backend_app.models.placement_drive import PlacementDrive
 from backend_app.utils.decorators import role_required
 from backend_app.utils.responses import error_response, success_response
@@ -335,4 +338,27 @@ def reject_application(application_id: int):
         )
     return modify_job_application_status(
         application_id=application_id, action=ApplicationAction.REJECT
+    )
+
+
+@company_bp.get("/students/<int:student_id>/resume")
+@login_required
+@role_required(UserRole.COMPANY)
+def download_resume(student_id: int):
+
+    student: Student | None = db.session.scalar(
+        db.select(Student).where(Student.id == student_id)
+    )
+
+    if not student:
+        return error_response(
+            errors="No student found with specified id", status=HTTPStatus.NOT_FOUND
+        )
+
+    storage_filename = STUDENT_RESUME_NAME_TEMPLATE.format(user_id=student.id)
+
+    return send_from_directory(
+        directory=UPLOAD_FOLDER_PATH,
+        path=storage_filename,
+        download_name=student.resume_filename,
     )

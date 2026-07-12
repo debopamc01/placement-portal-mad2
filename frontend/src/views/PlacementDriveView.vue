@@ -163,7 +163,7 @@ async function createPlacementDrive(newDrive) {
     placementDrive.value = data.data.placement_drive;
 
     successMessage.value = 'Placement drive created successfully';
-    router.push(`/placement-drives/${placementDrive.value.id}`);
+    router.replace(`/placement-drives/${placementDrive.value.id}`);
   } catch (error) {
     console.error(error);
     errorMessage.value = 'Unable to create placement drive';
@@ -271,7 +271,7 @@ watchEffect(async () => {
   if (props.mode !== 'create') {
     await fetchPlacementDriveDetails(route.params.id);
     if (props.mode !== 'edit') {
-      if (role.value !== 'student') await fetchApplications(route.params.id);
+      await fetchApplications(route.params.id);
     }
   }
 });
@@ -283,6 +283,7 @@ watchEffect(async () => {
     :mode="mode"
     :loading="loading"
     @create="createPlacementDrive"
+    @back="goBack"
   />
 
   <PlacementDriveDetails
@@ -308,10 +309,12 @@ watchEffect(async () => {
 
   <div v-else class="text-center mt-5">Loading...</div>
 
-  <h3 class="text-center mt-2" v-if="mode === 'view' && role !== 'student'">Applications</h3>
+  <h3 class="text-center mt-2" v-if="mode === 'view'">
+    {{ role !== 'student' ? 'Applications' : 'My Application' }}
+  </h3>
 
   <ApplicationsTable
-    v-if="placementDrive && mode === 'view' && role !== 'student'"
+    v-if="placementDrive && mode === 'view'"
     :applications="applications"
     :actions="allowedActionsForApplication"
     :disable-actions-button="placementDrive.status !== 'active'"

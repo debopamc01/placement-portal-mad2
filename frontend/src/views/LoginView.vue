@@ -23,11 +23,11 @@ async function login() {
     // TODO:If authenticated user tries to login, show dashboard
 
     if (role === 'admin') {
-      router.push('/admin');
+      router.replace('/admin');
     } else if (role === 'company') {
-      router.push('/company');
+      router.replace('/company');
     } else {
-      router.push('/student');
+      router.replace('/student');
     }
   } catch (error) {
     errorMessage.value = error.message;
