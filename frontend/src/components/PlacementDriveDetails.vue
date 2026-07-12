@@ -227,7 +227,13 @@ function submit() {
 
               <!-- View -->
 
-              <div v-else-if="allowedActions.length > 0" class="dropdown">
+              <div
+                v-else-if="
+                  allowedActions.length > 0 &&
+                  !(allowedActions.length === 1 && placementDrive.has_applied)
+                "
+                class="dropdown"
+              >
                 <button
                   class="btn btn-outline-primary dropdown-toggle"
                   type="button"

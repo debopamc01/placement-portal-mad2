@@ -94,7 +94,12 @@ async function fetchApplications(placementDriveId) {
       errorMessage.value = data.errors;
       return;
     }
-    applications.value = data.data.applications;
+
+    if (data.data.applications) {
+      applications.value = data.data.applications;
+    } else {
+      applications.value = [];
+    }
   } catch (error) {
     console.error(error);
     errorMessage.value = `Error fetching applications for placement drive ${placementDriveId}`;
@@ -257,9 +262,8 @@ async function applyToPlacementDrive() {
       return;
     }
 
-    // TODO: Fix the following
+    applications.value = [data.data.JobApplication];
     placementDrive.value.has_applied = true;
-    placementDrive.value.application_status = data.data.JobApplication.status;
   } catch (error) {
     errorMessage.value = error;
     console.log(error);

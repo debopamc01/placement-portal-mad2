@@ -32,7 +32,6 @@ def apply_to_placement_drive():
         )
     data = request.get_json()
     placement_drive_id = data.get("placement_drive_id")
-    application_time = data.get("application_time")
 
     placement_drive: PlacementDrive = db.session.scalar(
         db.select(PlacementDrive).where(PlacementDrive.id == placement_drive_id)
@@ -68,8 +67,10 @@ def apply_to_placement_drive():
         new_application.application_date = str(datetime.now(timezone.utc))
         db.session.add(new_application)
         db.session.commit()
+        new_application_dict = new_application.to_dict()
+        new_application_dict["has_applied"] = True
         return success_response(
-            data={"JobApplication": new_application.to_dict()},
+            data={"JobApplication": new_application_dict},
             status=HTTPStatus.CREATED,
         )
     except Exception as e:
@@ -115,7 +116,16 @@ def get_placement_drive(drive_id: int):
         return error_response(
             errors="Placement drive not found", status=HTTPStatus.NOT_FOUND
         )
-    return success_response(data={"placement_drive": placement_drive.to_dict()})
+    application: JobApplication | None = db.session.scalar(
+        db.select(JobApplication).where(
+            JobApplication.student_id == current_user.student.id,
+            JobApplication.placement_drive_id == placement_drive.id,
+        )
+    )
+    has_applied = application is not None
+    placement_drive_dict = placement_drive.to_dict()
+    placement_drive_dict["has_applied"] = has_applied
+    return success_response(data={"placement_drive": placement_drive_dict})
 
 
 allowed_mimetypes = {"pdf": "application/pdf"}
