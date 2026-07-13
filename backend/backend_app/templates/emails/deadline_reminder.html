@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+
+    <p>Hello {{ student.name }},</p>
+
+    <p>
+        The following placement drives are closing soon.
+    </p>
+
+    <ul>
+
+        {% for drive in placement_drives %}
+
+        <li>
+
+            <b>{{ drive.job_title }}</b>
+
+            <br>
+
+            Company:
+            {{ drive.company.name }}
+
+            <br>
+
+            Deadline:
+            {{ drive.application_deadline }}
+
+        </li>
+
+        {% endfor %}
+
+    </ul>
+
+    <p>
+        Please submit your applications before the deadline.
+    </p>
+
+</body>
+
+</html>

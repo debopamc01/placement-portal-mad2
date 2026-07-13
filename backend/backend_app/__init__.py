@@ -1,10 +1,10 @@
 import os
-
+from dotenv import load_dotenv
 from flask import Flask
 from flask_cors import CORS
 
+load_dotenv()
 from config import (
-    BASE_DIR,
     DB_PATH,
     UPLOAD_FOLDER_PATH,
     Config,
@@ -12,7 +12,7 @@ from config import (
     ADMIN_PASSWORD,
 )
 from backend_app.models.model_enums import UserRole
-from backend_app.extensions import db, login_manager
+from backend_app.extensions import db, login_manager, mail
 from backend_app.routes.auth import auth_bp
 from backend_app.routes.admin import admin_bp
 from backend_app.routes.student import student_bp
@@ -49,6 +49,7 @@ def create_backend_app():
 
     db.init_app(app)
     login_manager.init_app(app)
+    mail.init_app(app)
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
@@ -57,5 +58,4 @@ def create_backend_app():
     with app.app_context():
         db.create_all()
         create_admin()
-
     return app
