@@ -113,7 +113,7 @@ function submit() {
         >
           Edit Profile
         </button>
-        <div v-if="allowedActions" class="dropdown">
+        <div v-if="allowedActions.length > 0" class="dropdown">
           <button
             class="btn btn-outline-primary dropdown-toggle"
             type="button"
@@ -134,7 +134,9 @@ function submit() {
               </button>
             </li>
             <li
-              v-if="allowedActions.includes('blacklist') && company.approval_status !== 'blacklisted'"
+              v-if="
+                allowedActions.includes('blacklist') && company.approval_status !== 'blacklisted'
+              "
             >
               <button type="button" class="dropdown-item text-danger" @click="$emit('blacklist')">
                 Blacklist

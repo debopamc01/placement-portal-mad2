@@ -6,10 +6,15 @@ from typing import Sequence
 from flask import Blueprint, request, send_from_directory
 from flask_login import current_user, login_required
 
+from backend_app.models.company import Company
 from backend_app.models.student import Student
 from config import ALLOWED_RESUME_FILE_EXTENSIONS, UPLOAD_FOLDER_PATH
 from backend_app.models.job_application import JobApplication
-from backend_app.models.model_enums import PlacementDriveStatus, UserRole
+from backend_app.models.model_enums import (
+    CompanyApprovalStatus,
+    PlacementDriveStatus,
+    UserRole,
+)
 from backend_app.models.placement_drive import PlacementDrive
 from backend_app.utils.decorators import role_required
 from backend_app.utils.responses import error_response, success_response
@@ -310,4 +315,66 @@ def export_applications():
     return success_response(
         message="Export started. You'll receive an email when it is ready.",
         status=HTTPStatus.ACCEPTED,
+    )
+
+
+@student_bp.get("/companies")
+@login_required
+@role_required(UserRole.STUDENT)
+def get_companies():
+    approved_companies: Sequence[Company] = db.session.scalars(
+        db.select(Company).where(
+            Company.approval_status == CompanyApprovalStatus.APPROVED
+        )
+    ).all()
+
+    return success_response(
+        data={"companies": [company.to_dict() for company in approved_companies]}
+    )
+
+
+@student_bp.get("/companies/<int:company_id>")
+@login_required
+@role_required(UserRole.STUDENT)
+def get_company_by_id(company_id: int):
+    company: Company | None = db.session.scalar(
+        db.select(Company).where(
+            Company.id == company_id,
+            Company.approval_status == CompanyApprovalStatus.APPROVED,
+        )
+    )
+
+    if not company:
+        return error_response(
+            errors="No company exists with specified id", status=HTTPStatus.NOT_FOUND
+        )
+
+    return success_response(data={"company": company.to_dict()})
+
+
+@student_bp.get("/companies/<int:company_id>/placement-drives")
+@login_required
+@role_required(UserRole.STUDENT)
+def get_placement_drives_for_company(company_id: int):
+    company: Company | None = db.session.scalar(
+        db.select(Company).where(
+            Company.id == company_id,
+            Company.approval_status == CompanyApprovalStatus.APPROVED,
+        )
+    )
+
+    if not company:
+        return error_response(
+            errors="No company exists with specified id", status=HTTPStatus.NOT_FOUND
+        )
+    placement_drives: Sequence[PlacementDrive] = db.session.scalars(
+        db.select(PlacementDrive).where(PlacementDrive.company_id == company_id)
+    ).all()
+
+    return success_response(
+        data={
+            "placement_drives": [
+                placement_drive.to_dict() for placement_drive in placement_drives
+            ]
+        }
     )
