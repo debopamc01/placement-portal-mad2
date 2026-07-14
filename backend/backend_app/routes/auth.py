@@ -152,7 +152,7 @@ def register_student():
         new_student.name = user_name
         new_student.description = description
         new_student.user = new_user
-        new_student.registered_at = str(datetime.now(timezone.utc).isoformat())
+        new_student.registered_at = datetime.now(timezone.utc).isoformat()
 
         db.session.add(new_user)
         db.session.add(new_student)
@@ -225,7 +225,7 @@ def register_company():
         new_company.hr_contact = hr_contact
         new_company.website = website
         new_company.user = new_user
-        new_company.registered_at = str(datetime.now(timezone.utc).isoformat())
+        new_company.registered_at = datetime.now(timezone.utc).isoformat()
 
         db.session.add(new_user)
         db.session.add(new_company)

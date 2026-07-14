@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from typing import Sequence
 
 from backend_app.extensions import db
@@ -16,12 +16,12 @@ DAYS_BEFORE_DEADLINE_TO_REMIND = 2
 
 def _application_deadline_to_datetime(application_deadline: str) -> datetime:
 
-    return datetime.fromisoformat(application_deadline).astimezone(timezone.utc)
+    return datetime.fromisoformat(application_deadline).astimezone()
 
 
 def send_placement_drive_daily_deadline_reminders():
 
-    today = datetime.now(timezone.utc)
+    today = datetime.now()
 
     date_after_n_days = today + timedelta(days=DAYS_BEFORE_DEADLINE_TO_REMIND)
 
@@ -47,8 +47,14 @@ def send_placement_drive_daily_deadline_reminders():
             application.placement_drive_id for application in student.applications
         }
 
-        pending_drives = [
-            drive
+        pending_drives: list[dict[str, str | datetime]] = [
+            {
+                "title": drive.job_title,
+                "company_name": drive.company.name,
+                "application_deadline": _application_deadline_to_datetime(
+                    drive.application_deadline
+                ),
+            }
             for drive in valid_placement_drives
             if drive.id not in applied_drive_ids
         ]

@@ -64,7 +64,8 @@ def apply_to_placement_drive():
         new_application = JobApplication()
         new_application.student = current_user.student
         new_application.placement_drive = placement_drive
-        new_application.application_date = str(datetime.now(timezone.utc))
+        new_application.application_date = datetime.now(timezone.utc).isoformat()
+
         db.session.add(new_application)
         db.session.commit()
         new_application_dict = new_application.to_dict()

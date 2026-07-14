@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Sequence
 
 from flask import render_template
@@ -12,7 +13,7 @@ from config import ADMIN_EMAIL
 
 
 def send_deadline_reminder(
-    student: Student, placement_drives: Sequence[PlacementDrive]
+    student: Student, placement_drives: Sequence[dict[str, str | datetime]]
 ):
 
     message = Message(

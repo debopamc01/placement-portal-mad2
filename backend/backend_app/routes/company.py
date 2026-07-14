@@ -51,9 +51,10 @@ def create_placement_drive():
         new_drive.job_title = title
         new_drive.job_description = description
         new_drive.eligibility_criteria = eligibility_criteria
-        new_drive.application_deadline = application_deadline
+        new_drive.application_deadline = application_deadline  # already in iso format
         new_drive.company = current_user.company
-        new_drive.created_at = str(datetime.now(timezone.utc))
+        new_drive.created_at = datetime.now(timezone.utc).isoformat()
+
         db.session.add(new_drive)
         db.session.commit()
         return success_response(
