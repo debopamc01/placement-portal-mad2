@@ -9,5 +9,5 @@ if [ "$current_dir" != "backend" ]; then
     exit 1
 else
     # Execute the Celery command
-    celery -A celery_app worker --loglevel=info
+    celery -A celery_utils.celery_main worker --loglevel=info
 fi

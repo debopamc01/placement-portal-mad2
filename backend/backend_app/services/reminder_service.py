@@ -21,7 +21,7 @@ def _application_deadline_to_datetime(application_deadline: str) -> datetime:
 
 def send_placement_drive_daily_deadline_reminders():
 
-    today = datetime.now()
+    today = datetime.now().astimezone()
 
     date_after_n_days = today + timedelta(days=DAYS_BEFORE_DEADLINE_TO_REMIND)
 

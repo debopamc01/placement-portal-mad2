@@ -59,3 +59,25 @@ def send_monthly_report_email(
         mail.send(message)
     except Exception as e:
         print(f"Exception while sending email to {ADMIN_EMAIL}:", str(e))
+
+
+def send_export_email(student: Student, csv_file_path: str):
+
+    message = Message(
+        subject="Placement Application History Export",
+        recipients=[student.user.email],
+        sender=current_app.config["MAIL_USERNAME"],
+    )
+
+    message.html = render_template(
+        template_name_or_list="emails/applications_export.html", student_id=student.id
+    )
+
+    with open(csv_file_path, "rb") as file:
+        message.attach(
+            filename="All_Applications.csv", content_type="text/csv", data=file.read()
+        )
+    try:
+        mail.send(message)
+    except Exception as e:
+        print(f"Exception while sending email to {student.user.email}:", str(e))

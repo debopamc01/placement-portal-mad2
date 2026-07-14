@@ -17,6 +17,8 @@ from backend_app.extensions import db
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
+from backend_app.tasks.tasks import export_student_applications_task
+
 student_bp = Blueprint("student", __name__, url_prefix="/api/student")
 
 STUDENT_RESUME_NAME_TEMPLATE = "Student_{user_id}.pdf"
@@ -296,3 +298,16 @@ def get_application_by_id(application_id: int):
             status=HTTPStatus.NOT_FOUND,
         )
     return success_response(data={"application": application.to_dict()})
+
+
+@student_bp.post("/export")
+@login_required
+@role_required(UserRole.STUDENT)
+def export_applications():
+
+    export_student_applications_task.delay(current_user.student.id)  # type: ignore
+
+    return success_response(
+        message="Export started. You'll receive an email when it is ready.",
+        status=HTTPStatus.ACCEPTED,
+    )
