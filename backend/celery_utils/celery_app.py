@@ -30,8 +30,8 @@ celery.conf.beat_schedule = {
     # Task: Daily Reminder Email for placement drives: Runs every day at 9 am
     "daily_reminders": {
         "task": "backend_app.tasks.tasks.send_daily_deadline_reminders_task",
-        "schedule": timedelta(minutes=1),
-        # "schedule": crontab(hour=9),
+        # "schedule": timedelta(minutes=1),
+        "schedule": crontab(hour=9),
     },
 
     ########################

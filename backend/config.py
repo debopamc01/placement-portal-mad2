@@ -1,9 +1,8 @@
 import os
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-# ADMIN_EMAIL = "admin@example.com"
-ADMIN_EMAIL = "22f1000777@ds.study.iitm.ac.in"
-ADMIN_PASSWORD = "Admin@12345"
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@example.com")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin@12345")
 DB_PATH = os.path.join(BASE_DIR, "backend_app", "instance")
 DB_FILE_NAME = "placement.db"
 UPLOAD_FOLDER_PATH = os.path.join(BASE_DIR, "uploads", "resumes")

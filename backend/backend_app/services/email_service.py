@@ -75,7 +75,9 @@ def send_export_email(student: Student, csv_file_path: str):
 
     with open(csv_file_path, "rb") as file:
         message.attach(
-            filename="All_Applications.csv", content_type="text/csv", data=file.read()
+            filename=f"Applications_{student.name}.csv",
+            content_type="text/csv",
+            data=file.read(),
         )
     try:
         mail.send(message)

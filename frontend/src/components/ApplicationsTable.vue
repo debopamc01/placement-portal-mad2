@@ -34,6 +34,8 @@ const emit = defineEmits(['view', 'shortlist', 'select', 'reject']);
             <tr>
               <th>Student</th>
               <th>Email</th>
+              <th>Company</th>
+              <th>Job Title</th>
               <th>Status</th>
               <th>Applied On</th>
               <th class="text-center">Actions</th>
@@ -48,6 +50,14 @@ const emit = defineEmits(['view', 'shortlist', 'select', 'reject']);
 
               <td>
                 {{ application.student.email }}
+              </td>
+
+              <td>
+                {{ application.placement_drive.company.name }}
+              </td>
+
+              <td>
+                {{ application.placement_drive.job_title }}
               </td>
 
               <td>
@@ -116,7 +126,7 @@ const emit = defineEmits(['view', 'shortlist', 'select', 'reject']);
             </tr>
 
             <tr v-if="applications.length === 0">
-              <td colspan="5" class="text-center text-muted py-4">No applications received yet.</td>
+              <td colspan="7" class="text-center text-muted py-4">No applications received yet.</td>
             </tr>
           </tbody>
         </table>
