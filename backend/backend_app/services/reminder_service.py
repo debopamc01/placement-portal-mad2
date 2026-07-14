@@ -14,16 +14,12 @@ from backend_app.services.email_service import (
 DAYS_BEFORE_DEADLINE_TO_REMIND = 2
 
 
-def _application_deadline_to_datetime(application_deadline: str | None) -> datetime:
+def _application_deadline_to_datetime(application_deadline: str) -> datetime:
 
-    if application_deadline:
-        return datetime.fromisoformat(application_deadline).astimezone(timezone.utc)
-    return datetime.now() - timedelta(
-        days=10
-    )  # returning -10 days intentionally so that typing works
+    return datetime.fromisoformat(application_deadline).astimezone(timezone.utc)
 
 
-def send_deadline_reminders():
+def send_placement_drive_daily_deadline_reminders():
 
     today = datetime.now(timezone.utc)
 

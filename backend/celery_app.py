@@ -34,11 +34,20 @@ celery = create_celery_app()
 
 celery.autodiscover_tasks(packages=["backend_app.tasks"])
 
-# Task: Daily Reminder Email for placement drives: Runs every day at 9 am
+
 celery.conf.beat_schedule = {
-    "daily-reminders": {
+    ########################
+    # Task: Daily Reminder Email for placement drives: Runs every day at 9 am
+    "daily_reminders": {
         "task": "backend_app.tasks.tasks.send_reminders",
         # "schedule": timedelta(minutes=1),
         "schedule": crontab(hour=9),
+    },
+    ########################
+    # Task: Monthly report email for admin: Runs on 1st day of every month at 10 am
+    "monthly_reports": {
+        "task": "backend_app.tasks.tasks.send_monthly_reports",
+        # "schedule": timedelta(minutes=1),
+        "schedule": crontab(day_of_month=1, hour=10),
     },
 }

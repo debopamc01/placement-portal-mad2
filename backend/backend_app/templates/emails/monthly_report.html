@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+
+    <p>Hello Admin,</p>
+
+    <p>
+        Here is the placement activity report for
+        <strong>{{ month }}</strong>.
+    </p>
+
+    {% if placement_drive_reports %}
+    <table cellpadding="0" cellspacing="0" style="width:100%; border-collapse:collapse;">
+        <tr style="background:#f8f9fa;">
+            <th style="padding:8px; border:1px solid #cccccc; text-align:left;">
+                Title
+            </th>
+            <th style="padding:8px; border:1px solid #cccccc; text-align:left;">
+                Company
+            </th>
+            <th style="padding:8px; border:1px solid #cccccc; text-align:center;">
+                Applications
+            </th>
+            <th style="padding:8px; border:1px solid #cccccc; text-align:center;">
+                Selected
+            </th>
+        </tr>
+
+        {% for drive_report in placement_drive_reports %}
+        <tr>
+            <td style="padding:8px; border:1px solid #cccccc;">
+                {{ drive_report.title }}
+            </td>
+            <td style="padding:8px; border:1px solid #cccccc;">
+                {{ drive_report.company }}
+            </td>
+            <td style="padding:8px; border:1px solid #cccccc; text-align:center;">
+                {{ drive_report.total_applications }}
+            </td>
+            <td style="padding:8px; border:1px solid #cccccc; text-align:center;">
+                {{ drive_report.selected_applications }}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <br>
+
+    <p><strong>Summary</strong></p>
+
+    <ul>
+        <li>Total Placement Drives: {{ total_placement_drives }}</li>
+        <li>Total Applications: {{ total_applications }}</li>
+        <li>Total Selected Applications: {{ total_selected_applications }}</li>
+    </ul>
+
+    {% else %}
+
+    <p>No placement drives were created during this month.</p>
+
+    {% endif %}
+
+    <br>
+
+    <p>This report was generated automatically by the Placement Portal.</p>
+
+    <p>
+        Regards,<br>
+        Placement Portal
+    </p>
+</body>
+
+</html>
