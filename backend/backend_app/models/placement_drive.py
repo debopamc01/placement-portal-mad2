@@ -25,13 +25,14 @@ class PlacementDrive(db.Model):
     job_title: Mapped[str] = mapped_column(nullable=False)
     job_description: Mapped[Optional[str]] = mapped_column(nullable=True)
     eligibility_criteria: Mapped[Optional[str]] = mapped_column(nullable=True)
-    application_deadline: Mapped[Optional[str]] = mapped_column(nullable=True)
+    application_deadline: Mapped[str] = mapped_column(nullable=False)
     applications: Mapped[list[JobApplication]] = relationship(
         "JobApplication", back_populates="placement_drive", cascade="all, delete-orphan"
     )
     company: Mapped[Company] = relationship(
         "Company", back_populates="placement_drives"
     )
+    created_at: Mapped[str] = mapped_column(nullable=False)
 
     def to_dict(self) -> dict:
         return {

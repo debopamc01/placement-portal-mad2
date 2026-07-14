@@ -24,6 +24,7 @@ class Company(db.Model):
         default=CompanyApprovalStatus.PENDING,
         nullable=False,
     )
+    registered_at: Mapped[str] = mapped_column(nullable=False)
     placement_drives: Mapped[list[PlacementDrive]] = relationship(
         "PlacementDrive", back_populates="company", cascade="all, delete-orphan"
     )

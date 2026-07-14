@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from http import HTTPStatus
 from zoneinfo import ZoneInfo
 
@@ -53,6 +53,7 @@ def create_placement_drive():
         new_drive.eligibility_criteria = eligibility_criteria
         new_drive.application_deadline = application_deadline
         new_drive.company = current_user.company
+        new_drive.created_at = str(datetime.now(timezone.utc))
         db.session.add(new_drive)
         db.session.commit()
         return success_response(

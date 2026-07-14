@@ -20,6 +20,7 @@ class Student(db.Model):
     resume_filename: Mapped[Optional[str]] = mapped_column(nullable=True)
     description: Mapped[Optional[str]] = mapped_column(nullable=True)
     blacklisted: Mapped[bool] = mapped_column(default=False, nullable=False)
+    registered_at: Mapped[str] = mapped_column(nullable=False)
     applications: Mapped[list[JobApplication]] = relationship(
         "JobApplication", back_populates="student", cascade="all, delete-orphan"
     )
