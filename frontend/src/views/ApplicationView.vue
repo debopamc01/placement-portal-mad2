@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useRoute, useRouter } from 'vue-router';
 import StatusBadge from '@/components/StatusBadges.vue';
 import StudentDetails from '@/components/StudentDetails.vue';
+import NavBar from '@/components/NavBar.vue';
 
 const application = ref(null);
 const errorMessage = ref('');
@@ -74,18 +75,18 @@ onMounted(async () => {
 });
 </script>
 <template>
-  <div v-if="errorMessage" class="alert alert-danger">
-    {{ errorMessage }}
-  </div>
+  <div class="container mt-4 py-2">
+    <NavBar :title="'Application Detail'" />
+    <div v-if="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
 
-  <div v-else-if="!application" class="text-center mt-5">Loading...</div>
+    <div v-else-if="!application" class="text-center mt-5">Loading...</div>
 
-  <template v-else>
-    <div class="container py-4">
+    <template v-else>
+      <!-- <div class="container py-4"> -->
       <div class="card shadow-sm mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
-          <h3 class="mb-0">Application Details</h3>
-
           <StatusBadge :status="application.status" />
         </div>
 
@@ -118,6 +119,7 @@ onMounted(async () => {
         @back="goBack"
         @download-resume="downloadResume"
       />
-    </div>
-  </template>
+      <!-- </div> -->
+    </template>
+  </div>
 </template>

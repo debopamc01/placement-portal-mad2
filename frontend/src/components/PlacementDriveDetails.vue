@@ -105,13 +105,13 @@ function submit() {
 
 <template>
   <form @submit.prevent="submit">
-    <div class="container py-2">
+    <!-- <div class="container py-2"> -->
       <div class="card shadow-sm">
         <!-- Header -->
 
         <div class="card-header d-flex justify-content-between align-items-center">
           <div>
-            <h3 class="mb-1">
+            <h5 class="mb-1">
               {{
                 mode === 'create'
                   ? 'Create Placement Drive'
@@ -119,7 +119,7 @@ function submit() {
                     ? 'Edit Placement Drive'
                     : placementDrive.job_title
               }}
-            </h3>
+            </h5>
 
             <small v-if="mode !== 'create'" class="text-muted">
               {{ placementDrive.company.name }}
@@ -337,6 +337,6 @@ function submit() {
           </div>
         </div>
       </div>
-    </div>
+    <!-- </div> -->
   </form>
 </template>

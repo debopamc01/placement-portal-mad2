@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { useAuthStore } from '@/stores/auth';
 import StudentDetails from '@/components/StudentDetails.vue';
+import NavBar from '@/components/NavBar.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -178,7 +179,8 @@ watchEffect(async () => {
 </script>
 
 <template>
-  <h2 class="text-center mt-3">Student Profile</h2>
+  <div class="container mt-4">
+  <NavBar :title="'Student Profile'"/>
 
   <div v-if="successMessage" class="alert alert-success">
     {{ successMessage }}
@@ -203,4 +205,5 @@ watchEffect(async () => {
   />
 
   <div v-else-if="loading" class="text-center mt-5">Loading...</div>
+  </div>
 </template>

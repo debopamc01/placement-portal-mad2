@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/auth';
 
 import CompanyDetails from '@/components/CompanyDetails.vue';
 import PlacementDriveTable from '@/components/PlacementDriveTable.vue';
+import NavBar from '@/components/NavBar.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -21,6 +22,11 @@ const props = defineProps({
   editProfilePermission: {
     type: Boolean,
     default: false,
+  },
+
+  navBarTitle: {
+    type: String,
+    default: 'Company View',
   },
 });
 
@@ -183,7 +189,8 @@ watchEffect(async () => {
 </script>
 
 <template>
-  <h2 class="text-center mt-3">Company Profile</h2>
+  <div class="container mt-4">
+  <NavBar :title="navBarTitle" />
 
   <div v-if="successMessage" class="alert alert-success">
     {{ successMessage }}
@@ -193,7 +200,7 @@ watchEffect(async () => {
     {{ errorMessage }}
   </div>
 
-  <div class="mb-4" v-if="company">
+  <template class="card shadow-sm mb-4" v-if="company">
     <CompanyDetails
       :company="company"
       :mode="mode"
@@ -205,18 +212,21 @@ watchEffect(async () => {
       @back="goBack"
       @edit="editCompany"
     />
-  </div>
+  </template>
 
   <div v-else-if="loading" class="text-center mt-5">Loading...</div>
 
-  <div class="card shadow-sm" v-if="company && userRole !== 'company'">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <h5 class="card-title mb-0">Placement Drives</h5>
+  <div v-if="company && userRole !== 'company'">
+    <div class="card shadow-sm mt-4">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Placement Drives</h5>
+      </div>
+      <PlacementDriveTable
+        :placement-drives="placementDrives"
+        :actions="['view']"
+        @view="viewPlacementDrive"
+      />
     </div>
-    <PlacementDriveTable
-      :placement-drives="placementDrives"
-      :actions="['view']"
-      @view="viewPlacementDrive"
-    />
+  </div>
   </div>
 </template>

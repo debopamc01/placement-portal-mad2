@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/auth';
 import PlacementDriveDetails from '@/components/PlacementDriveDetails.vue';
 import ApplicationsTable from '@/components/ApplicationsTable.vue';
 import { modifyPlacementDriveStatus } from '@/common/apiFunctions';
+import NavBar from '@/components/NavBar.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -281,7 +282,8 @@ watchEffect(async () => {
 });
 </script>
 <template>
-  <h2 class="text-center mt-3">Placement Drive Details</h2>
+  <div class="container mt-4">
+  <NavBar :title="'Placement Drive Details'"/>
   <PlacementDriveDetails
     v-if="mode === 'create'"
     :mode="mode"
@@ -313,10 +315,6 @@ watchEffect(async () => {
 
   <div v-else class="text-center mt-5">Loading...</div>
 
-  <h3 class="text-center mt-2" v-if="mode === 'view'">
-    {{ role !== 'student' ? 'Applications' : 'My Application' }}
-  </h3>
-
   <ApplicationsTable
     v-if="placementDrive && mode === 'view'"
     :applications="applications"
@@ -327,4 +325,5 @@ watchEffect(async () => {
     @reject="(applicationId) => updateApplicationStatus(applicationId, 'reject')"
     @view="(applicationId) => viewApplicationDetails(applicationId)"
   />
+  </div>
 </template>

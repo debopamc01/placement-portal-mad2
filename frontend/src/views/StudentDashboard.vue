@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/auth';
 
 import PlacementDriveTable from '@/components/PlacementDriveTable.vue';
 import CompaniesTable from '@/components/CompaniesTable.vue';
+import NavBar from '@/components/NavBar.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -132,30 +133,16 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="container mt-5">
-    <div class="d-flex justify-content-between">
-      <h1>Student Dashboard</h1>
+  <div class="container mt-4">
+    <NavBar title="Student Dashboard" />
 
-      <button class="btn btn-danger" @click="logout">Logout</button>
-    </div>
-    <hr />
-    <div v-if="authStore.user">
-      <p>
-        <strong>Email:</strong>
-        {{ authStore.user.email }}
-      </p>
-
-      <p>
-        <strong>Role:</strong>
-        {{ authStore.user.role }}
-      </p>
-    </div>
     <div>
       <CompaniesTable :companies="companies" :actions="['view']" @view="viewCompany" />
     </div>
-    <div class="card mt-4">
+
+    <div class="card shadow-sm mt-4">
       <div class="card-header d-flex justify-content-between">
-        <h4>Available Placement Drives</h4>
+        <h5>Available Placement Drives</h5>
       </div>
       <PlacementDriveTable
         :placement-drives="unappliedPlacementDrives"
@@ -167,9 +154,10 @@ onMounted(() => {
         @view="viewPlacementDrive"
       />
     </div>
-    <div class="card mt-4">
+
+    <div class="card shadow-sm mt-4">
       <div class="card-header d-flex justify-content-between">
-        <h4>Application History</h4>
+        <h5>Application History</h5>
         <button class="btn btn-primary" @click="exportApplications">Export to CSV</button>
       </div>
       <PlacementDriveTable

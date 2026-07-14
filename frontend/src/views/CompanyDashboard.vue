@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import PlacementDriveTable from '@/components/PlacementDriveTable.vue';
+import NavBar from '@/components/NavBar.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -67,23 +68,7 @@ onMounted(() => {
 
 <template>
   <div class="container mt-5">
-    <div class="d-flex justify-content-between">
-      <h1>Company Dashboard</h1>
-
-      <button class="btn btn-danger" @click="logout">Logout</button>
-    </div>
-    <hr />
-    <div v-if="authStore.user">
-      <p>
-        <strong>Email:</strong>
-        {{ authStore.user.email }}
-      </p>
-
-      <p>
-        <strong>Role:</strong>
-        {{ authStore.user.role }}
-      </p>
-    </div>
+    <NavBar :title="'Company Dashboard'" />
 
     <div class="card shadow-sm">
       <div class="card-header d-flex justify-content-between align-items-center">

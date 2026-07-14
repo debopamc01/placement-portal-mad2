@@ -8,6 +8,7 @@ import StatusBadge from '@/components/StatusBadges.vue';
 import StudentsTable from '@/components/StudentsTable.vue';
 import ApplicationsTable from '@/components/ApplicationsTable.vue';
 import CompaniesTable from '@/components/CompaniesTable.vue';
+import NavBar from '@/components/NavBar.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -321,31 +322,14 @@ onMounted(() => {
 
 <template>
   <div class="container mt-5">
-    <div class="d-flex justify-content-between">
-      <h1>Admin Dashboard</h1>
-
-      <button class="btn btn-danger" @click="logout">Logout</button>
-    </div>
-
-    <hr />
-
-    <div v-if="authStore.user">
-      <p>
-        <strong>Email:</strong>
-        {{ authStore.user.email }}
-      </p>
-
-      <p>
-        <strong>Role:</strong>
-        {{ authStore.user.role }}
-      </p>
-    </div>
+    <NavBar :title="'Admin Dashboard'" />
 
     <div class="row g-3 mb-4">
       <div class="col-md-3">
         <div class="card shadow-sm text-center">
           <div class="card-body">
             <h6 class="text-muted mb-1">Students</h6>
+            <div class="h1">👨‍🎓</div>
             <h2 class="mb-0">{{ students.length }}</h2>
           </div>
         </div>
@@ -355,6 +339,7 @@ onMounted(() => {
         <div class="card shadow-sm text-center">
           <div class="card-body">
             <h6 class="text-muted mb-1">Companies</h6>
+            <div class="h1">🏢</div>
             <h2 class="mb-0">{{ companies.length }}</h2>
           </div>
         </div>
@@ -364,6 +349,8 @@ onMounted(() => {
         <div class="card shadow-sm text-center">
           <div class="card-body">
             <h6 class="text-muted mb-1">Placement Drives</h6>
+            <div class="h1">🚀</div>
+
             <h2 class="mb-0">{{ placementDrives.length }}</h2>
           </div>
         </div>
@@ -373,69 +360,70 @@ onMounted(() => {
         <div class="card shadow-sm text-center">
           <div class="card-body">
             <h6 class="text-muted mb-1">Applications</h6>
+            <div class="h1">📝</div>
             <h2 class="mb-0">{{ applications.length }}</h2>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="mb-4 d-flex justify-content-start gap-2">
-      <select v-model="searchField" class="form-select">
-        <option disabled value="">Search By</option>
+    <div class="container mt-5">
+      <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+          <button
+            class="nav-link"
+            :class="{ active: activeTab === 'companies' }"
+            @click="activeTab = 'companies'"
+          >
+            Companies
+          </button>
+        </li>
 
-        <option v-for="field in searchFields" :key="field.value" :value="field.value">
-          {{ field.label }}
-        </option>
-      </select>
+        <li class="nav-item">
+          <button
+            class="nav-link"
+            :class="{ active: activeTab === 'students' }"
+            @click="activeTab = 'students'"
+          >
+            Students
+          </button>
+        </li>
 
-      <input v-model="searchValue" class="form-control" placeholder="Search..." />
+        <li class="nav-item">
+          <button
+            class="nav-link"
+            :class="{ active: activeTab === 'placement-drives' }"
+            @click="activeTab = 'placement-drives'"
+          >
+            Placement Drives
+          </button>
+        </li>
 
-      <button class="btn btn-primary">Search</button>
+        <li class="nav-item">
+          <button
+            class="nav-link"
+            :class="{ active: activeTab === 'applications' }"
+            @click="activeTab = 'applications'"
+          >
+            Applications
+          </button>
+        </li>
+      </ul>
+      <div class="mb-4 d-flex justify-content-start gap-2">
+        <select v-model="searchField" class="form-select w-auto">
+          <option disabled value="">Search By</option>
 
-      <button class="btn btn-secondary" @click="clearSearch">Clear</button>
-    </div>
+          <option v-for="field in searchFields" :key="field.value" :value="field.value">
+            {{ field.label }}
+          </option>
+        </select>
 
-    <ul class="nav nav-tabs mb-4">
-      <li class="nav-item">
-        <button
-          class="nav-link"
-          :class="{ active: activeTab === 'companies' }"
-          @click="activeTab = 'companies'"
-        >
-          Companies
-        </button>
-      </li>
+        <input v-model="searchValue" class="form-control" placeholder="Search..." />
 
-      <li class="nav-item">
-        <button
-          class="nav-link"
-          :class="{ active: activeTab === 'students' }"
-          @click="activeTab = 'students'"
-        >
-          Students
-        </button>
-      </li>
+        <button class="btn btn-primary w-auto">Search</button>
 
-      <li class="nav-item">
-        <button
-          class="nav-link"
-          :class="{ active: activeTab === 'placement-drives' }"
-          @click="activeTab = 'placement-drives'"
-        >
-          Placement Drives
-        </button>
-      </li>
-
-      <li class="nav-item">
-        <button
-          class="nav-link"
-          :class="{ active: activeTab === 'applications' }"
-          @click="activeTab = 'applications'"
-        >
-          Applications
-        </button>
-      </li>
-
+        <button class="btn btn-secondary w-auto" @click="clearSearch">Clear</button>
+      </div>
       <CompaniesTable
         v-if="activeTab === 'companies'"
         :companies="filteredCompanies"
@@ -453,23 +441,21 @@ onMounted(() => {
         @view="viewStudent"
       />
 
-      <div class="container py-2">
-        <div class="mt-5" v-if="activeTab === 'placement-drives'">
-          <div class="card shadow-sm">
-            <div class="card-header d-flex justify-content-between align-items-center">
-              <h5 class="card-title mb-0">Placement Drives</h5>
-            </div>
-            <PlacementDriveTable
-              :placement-drives="filteredPlacementDrives"
-              :actions="['approve', 'decline', 'reopen', 'close', 'delete', 'view']"
-              :show-company="true"
-              @approve="(placementDriveId) => modifyPlacementDrive(placementDriveId, 'approve')"
-              @decline="(placementDriveId) => modifyPlacementDrive(placementDriveId, 'decline')"
-              @close="(placementDriveId) => modifyPlacementDrive(placementDriveId, 'close')"
-              @reopen="(placementDriveId) => modifyPlacementDrive(placementDriveId, 'reopen')"
-              @view="viewPlacementDrive"
-            />
+      <div class="mt-4" v-if="activeTab === 'placement-drives'">
+        <div class="card shadow-sm">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Placement Drives</h5>
           </div>
+          <PlacementDriveTable
+            :placement-drives="filteredPlacementDrives"
+            :actions="['approve', 'decline', 'reopen', 'close', 'delete', 'view']"
+            :show-company="true"
+            @approve="(placementDriveId) => modifyPlacementDrive(placementDriveId, 'approve')"
+            @decline="(placementDriveId) => modifyPlacementDrive(placementDriveId, 'decline')"
+            @close="(placementDriveId) => modifyPlacementDrive(placementDriveId, 'close')"
+            @reopen="(placementDriveId) => modifyPlacementDrive(placementDriveId, 'reopen')"
+            @view="viewPlacementDrive"
+          />
         </div>
       </div>
 
@@ -480,6 +466,6 @@ onMounted(() => {
         :disable-actions-button="false"
         @view="viewApplicationDetails"
       />
-    </ul>
+    </div>
   </div>
 </template>

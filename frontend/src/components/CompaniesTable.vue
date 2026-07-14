@@ -18,10 +18,10 @@ const emit = defineEmits(['view', 'approve', 'reject', 'blacklist', 'delete']);
 </script>
 
 <template>
-  <div class="container py-2">
+  <!-- <div class="container py-2"> -->
     <div class="card shadow-sm mt-4">
       <div class="card-header">
-        <h4 class="mb-0">Companies</h4>
+        <h5 class="mb-0">Companies</h5>
       </div>
 
       <div class="card-body p-0">
@@ -136,5 +136,5 @@ const emit = defineEmits(['view', 'approve', 'reject', 'blacklist', 'delete']);
         </table>
       </div>
     </div>
-  </div>
+  <!-- </div> -->
 </template>

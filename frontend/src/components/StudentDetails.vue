@@ -86,11 +86,12 @@ function submit() {
 
 <template>
   <form @submit.prevent="submit">
+    <!-- <div class="container mt-4"> -->
     <div class="card shadow-sm">
       <div class="card-header">
-        <h4 class="mb-0">
+        <h5 class="mb-0">
           {{ mode === 'edit' ? 'Edit Student Details' : 'Student Details' }}
-        </h4>
+        </h5>
       </div>
 
       <!---TODO: Update with actual fields-->
@@ -235,5 +236,6 @@ function submit() {
         </button>
       </div>
     </div>
+    <!-- </div> -->
   </form>
 </template>

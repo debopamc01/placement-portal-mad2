@@ -64,11 +64,11 @@ function submit() {
 
 <template>
   <form @submit.prevent="submit">
-    <div class="card shadow-sm">
+    <div class="card shadow-sm mt-4">
       <div class="card-header d-flex justify-content-between align-items-center">
-        <h4 class="mb-0">
+        <h5 class="mb-0">
           {{ mode === 'edit' ? 'Edit Company Details' : 'Company Details' }}
-        </h4>
+        </h5>
         <StatusBadge v-if="mode !== 'edit'" :status="company.approval_status" />
       </div>
 
