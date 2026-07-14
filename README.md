@@ -201,7 +201,7 @@ Create a `.env` file inside the `backend` directory.
 MAIL_ADDRESS=your_email@gmail.com
 MAIL_PASSWORD=your_gmail_app_password
 
-ADMIN_EMAIL=admin@example.com
+ADMIN_EMAIL=admin_email@gmail.com
 ADMIN_PASSWORD=your_admin_password
 ```
 
