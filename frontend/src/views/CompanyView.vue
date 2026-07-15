@@ -102,10 +102,21 @@ async function fetchPlacementDrives() {
 
 async function saveCompany(updatedCompany) {
   errorMessage.value = '';
+  loading.value = true;
+
+  const proceed = confirm(
+    'Modifying the company information will reset the approval from admin.\
+    Do you want to proceed?',
+  );
+  if (!proceed) {
+    loading.value = false;
+    goBack();
+    return;
+  }
 
   try {
     const response = await fetch('/api/company/profile', {
-      method: 'PUT',
+      method: 'PATCH',
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
@@ -121,11 +132,17 @@ async function saveCompany(updatedCompany) {
     }
 
     company.value = data.data.company;
-    successMessage.value = 'Company profile updated successfully';
+    successMessage.value = 'Company profile updated successfully. Awaiting admin approval.';
+    setTimeout(() => logout(), 1500);
   } catch (error) {
     console.error(error);
     errorMessage.value = 'Unable to update company profile';
   }
+}
+
+async function logout() {
+  await authStore.logout();
+  router.push('/login');
 }
 
 function goBack() {
@@ -190,43 +207,45 @@ watchEffect(async () => {
 
 <template>
   <div class="container mt-4">
-  <NavBar :title="navBarTitle" />
+    <NavBar :title="navBarTitle" />
 
-  <div v-if="successMessage" class="alert alert-success">
-    {{ successMessage }}
-  </div>
-
-  <div v-if="errorMessage" class="alert alert-danger">
-    {{ errorMessage }}
-  </div>
-
-  <template class="card shadow-sm mb-4" v-if="company">
-    <CompanyDetails
-      :company="company"
-      :mode="mode"
-      :allowedActions="allowedActions"
-      @approve="modifyCompanyApprovalStatus('approve')"
-      @reject="modifyCompanyApprovalStatus('reject')"
-      @blacklist="modifyCompanyApprovalStatus('blacklist')"
-      @save="saveCompany"
-      @back="goBack"
-      @edit="editCompany"
-    />
-  </template>
-
-  <div v-else-if="loading" class="text-center mt-5">Loading...</div>
-
-  <div v-if="company && userRole !== 'company'">
-    <div class="card shadow-sm mt-4">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="card-title mb-0">Placement Drives</h5>
-      </div>
-      <PlacementDriveTable
-        :placement-drives="placementDrives"
-        :actions="['view']"
-        @view="viewPlacementDrive"
-      />
+    <div v-if="successMessage" class="alert alert-success">
+      {{ successMessage }}
     </div>
-  </div>
+
+    <div v-if="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+
+    <template class="card shadow-sm mb-4" v-if="company">
+      <CompanyDetails
+        :company="company"
+        :mode="mode"
+        :allowedActions="allowedActions"
+        :editProfilePermission="userRole === 'company'"
+        :loading="loading"
+        @approve="modifyCompanyApprovalStatus('approve')"
+        @reject="modifyCompanyApprovalStatus('reject')"
+        @blacklist="modifyCompanyApprovalStatus('blacklist')"
+        @save="saveCompany"
+        @back="goBack"
+        @edit="editCompany"
+      />
+    </template>
+
+    <div v-else-if="loading" class="text-center mt-5">Loading...</div>
+
+    <div v-if="company && userRole !== 'company'">
+      <div class="card shadow-sm mt-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0">Placement Drives</h5>
+        </div>
+        <PlacementDriveTable
+          :placement-drives="placementDrives"
+          :actions="['view']"
+          @view="viewPlacementDrive"
+        />
+      </div>
+    </div>
   </div>
 </template>

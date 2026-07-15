@@ -29,6 +29,11 @@ const props = defineProps({
     default: () => [],
     // Options: ['approve', 'reject', 'blacklist']
   },
+
+  loading: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(['save', 'back', 'edit', 'approve', 'reject', 'blacklist']);
@@ -104,7 +109,9 @@ function submit() {
       </div>
 
       <div class="card-footer d-flex justify-content-end gap-2">
-        <button v-if="mode === 'edit'" type="submit" class="btn btn-primary">Save Changes</button>
+        <button v-if="mode === 'edit'" type="submit" class="btn btn-primary">
+          {{ loading ? 'Saving...' : 'Save Changes' }}
+        </button>
         <button
           v-if="mode !== 'edit' && editProfilePermission"
           type="button"
@@ -144,7 +151,7 @@ function submit() {
             </li>
           </ul>
         </div>
-        <button type="button" class="btn btn-secondary" @click="$emit('back')">
+        <button type="button" class="btn btn-secondary" :disabled="loading" @click="$emit('back')">
           {{ isReadOnly ? 'Back' : 'Cancel' }}
         </button>
       </div>

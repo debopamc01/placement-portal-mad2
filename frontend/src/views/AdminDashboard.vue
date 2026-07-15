@@ -349,7 +349,7 @@ onMounted(() => {
         <div class="card shadow-sm text-center">
           <div class="card-body">
             <h6 class="text-muted mb-1">Placement Drives</h6>
-            <div class="h1">🚀</div>
+            <div class="h1">💼</div>
 
             <h2 class="mb-0">{{ placementDrives.length }}</h2>
           </div>

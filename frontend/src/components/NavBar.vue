@@ -16,7 +16,6 @@ const router = useRouter();
 const user = computed(() => authStore.user);
 
 const dashboardLink = computed(() => {
-  console.log(user.value);
   if (!user.value) return '/login';
 
   switch (user.value.role.toLowerCase()) {
@@ -39,10 +38,10 @@ const profileLink = computed(() => {
 
   switch (user.value.role.toLowerCase()) {
     case 'student':
-      return `/students/${user.value.id}/profile`;
+      return `/student/profile`;
 
     case 'company':
-      return `/companies/${user.value.id}`;
+      return `/company/profile`;
 
     default:
       return null;
@@ -81,7 +80,7 @@ async function logout() {
           View Profile
         </RouterLink>
 
-        <button class="btn btn-outline-danger btn-sm" @click="logout">Logout</button>
+        <button class="btn btn-danger btn-sm" @click="logout">Logout</button>
       </div>
     </div>
   </nav>

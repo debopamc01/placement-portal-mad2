@@ -374,3 +374,48 @@ def get_profile():
     company: Company = current_user.company
 
     return success_response(data={"company": company.to_dict()})
+
+
+@company_bp.patch("/profile")
+@login_required
+@role_required(UserRole.COMPANY)
+def update_profile():
+
+    data = request.get_json()
+    if not data:
+        return error_response(
+            errors="Invalid JSON payload",
+            status=HTTPStatus.BAD_REQUEST,
+        )
+
+    company_name = data.get("name")
+    hr_contact = data.get("hr_contact")
+    website: str = data.get("website")
+    if website and not website.startswith("http"):
+        website = "http://" + website
+
+    try:
+        company: Company | None = current_user.company
+        if not company:
+            return error_response(
+                errors="Company not found", status=HTTPStatus.NOT_FOUND
+            )
+        company.name = company_name
+        company.hr_contact = hr_contact
+        company.website = website
+
+        # Profile update resets company approval status
+        company.approval_status = CompanyApprovalStatus.PENDING
+
+        # Placement drive approvals reset to pending
+        for placement_drive in company.placement_drives:
+            placement_drive.status = PlacementDriveStatus.PENDING
+            # Application status reset to applied
+            for application in placement_drive.applications:
+                application.status = JobApplicationStatus.APPLIED
+
+        db.session.commit()
+        return success_response(data={"company": company.to_dict()})
+    except Exception as e:
+        db.session.rollback()
+        return error_response(errors=str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR)
