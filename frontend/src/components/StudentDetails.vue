@@ -8,10 +8,6 @@ const props = defineProps({
       name: '',
       email: '',
       description: '',
-      cgpa: '',
-      degree: '',
-      department: '',
-      graduation_year: '',
       resume_filename: '',
     }),
   },
@@ -51,10 +47,6 @@ const localStudent = reactive({
   name: '',
   email: '',
   description: '',
-  cgpa: '',
-  degree: '',
-  department: '',
-  graduation_year: '',
   resume_filename: '',
 });
 
@@ -67,10 +59,6 @@ watch(
       name: student.name ?? '',
       email: student.email ?? '',
       description: student.description ?? '',
-      cgpa: student.cgpa ?? '',
-      degree: student.degree ?? '',
-      department: student.department ?? '',
-      graduation_year: student.graduation_year ?? '',
       resume_filename: student.resume_filename ?? '',
     });
   },
@@ -134,45 +122,6 @@ function submit() {
         </div>
 
         <div class="row">
-          <div class="col-md-4 mb-3">
-            <label class="form-label fw-semibold"> CGPA </label>
-
-            <input
-              v-model="localStudent.cgpa"
-              type="number"
-              step="0.01"
-              min="0"
-              max="10"
-              class="form-control"
-              :readonly="isReadOnly"
-            />
-          </div>
-
-          <div class="col-md-4 mb-3">
-            <label class="form-label fw-semibold"> Degree </label>
-
-            <input v-model="localStudent.degree" class="form-control" :readonly="isReadOnly" />
-          </div>
-
-          <div class="col-md-4 mb-3">
-            <label class="form-label fw-semibold"> Department </label>
-
-            <input v-model="localStudent.department" class="form-control" :readonly="isReadOnly" />
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="col-md-4 mb-3">
-            <label class="form-label fw-semibold"> Graduation Year </label>
-
-            <input
-              v-model="localStudent.graduation_year"
-              type="number"
-              class="form-control"
-              :readonly="isReadOnly"
-            />
-          </div>
-
           <div class="mb-4" v-if="resumePermissions.length > 0">
             <label class="form-label fw-semibold">Resume</label>
             <div class="col-md-5">
@@ -218,7 +167,7 @@ function submit() {
       </div>
 
       <div class="card-footer d-flex gap-2 flex-row-reverse justify-end">
-        <button type="button" class="btn btn-secondary" @click="$emit('back')">
+        <button type="button" class="btn btn-secondary" :disabled="loading" @click="$emit('back')">
           {{ isReadOnly ? 'Back' : 'Cancel' }}
         </button>
 

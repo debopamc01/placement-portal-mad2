@@ -4,7 +4,6 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import PlacementDriveTable from '@/components/PlacementDriveTable.vue';
 import { modifyPlacementDriveStatus } from '@/common/apiFunctions';
-import StatusBadge from '@/components/StatusBadges.vue';
 import StudentsTable from '@/components/StudentsTable.vue';
 import ApplicationsTable from '@/components/ApplicationsTable.vue';
 import CompaniesTable from '@/components/CompaniesTable.vue';
@@ -21,11 +20,6 @@ const applications = ref([]);
 const activeTab = ref('companies');
 const searchField = ref('');
 const searchValue = ref('');
-
-async function logout() {
-  await authStore.logout();
-  router.push('/login');
-}
 
 async function loadCompanies() {
   errorMessage.value = '';
@@ -139,7 +133,61 @@ async function fetchStudents() {
 }
 
 async function viewStudent(studentId) {
-  router.push(`/students/${studentId}/profile`);
+  router.push(`/students/${studentId}`);
+}
+
+async function downloadResume(studentId) {
+  errorMessage.value = '';
+
+  try {
+    const url = `/api/admin/students/${studentId}/resume`;
+
+    const response = await fetch(url, {
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      errorMessage.value = 'Unable to download resume.';
+      return;
+    }
+
+    const blob = await response.blob();
+
+    const objectUrl = URL.createObjectURL(blob);
+
+    window.open(objectUrl, '_blank');
+
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+  } catch (error) {
+    console.error(error);
+    errorMessage.value = 'Unable to download resume.';
+  }
+}
+
+async function blacklistStudent(studentId) {
+  errorMessage.value = '';
+
+  try {
+    const url = `/api/admin/students/${studentId}/blacklist`;
+    const response = await fetch(url, {
+      method: 'POST',
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      errorMessage.value = 'Unable to blacklist student';
+      return;
+    }
+
+    const student = students.value.find((student) => student.id === studentId);
+
+    if (student) {
+      student.blacklisted = true;
+    }
+  } catch (error) {
+    console.error(error);
+    errorMessage.value = 'Unable to blacklist student';
+  }
 }
 
 async function fetchApplications() {
@@ -439,6 +487,8 @@ onMounted(() => {
         :students="filteredStudents"
         :actions="['view', 'blacklist', 'delete']"
         @view="viewStudent"
+        @blacklist="blacklistStudent"
+        @view-resume="downloadResume"
       />
 
       <div class="mt-4" v-if="activeTab === 'placement-drives'">
