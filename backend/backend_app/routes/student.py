@@ -55,7 +55,14 @@ def apply_to_placement_drive():
             status=HTTPStatus.FORBIDDEN,
         )
 
-    # TODO: Add logic for preventing applications after deadline
+    if (
+        datetime.fromisoformat(placement_drive.application_deadline).astimezone()
+        < datetime.now().astimezone()
+    ):
+        return error_response(
+            errors="Application deadline is over",
+            status=HTTPStatus.BAD_REQUEST,
+        )
 
     application = db.session.scalar(
         db.select(JobApplication).where(

@@ -53,6 +53,27 @@ async function loadPlacementDrives() {
 async function applyToPlacementDrive(placementDriveId) {
   errorMessage.value = '';
   try {
+    const placementDrive = allPlacementDrives.value.find((pd) => pd.id === placementDriveId);
+
+    // Already applied
+    if (placementDrive.has_applied) {
+      alert('You have already applied to this placement drive.');
+      return;
+    }
+
+    // Blacklisted
+    if (authStore.user.student.blacklisted) {
+      alert('Your account has been blacklisted. You cannot apply to placement drives.');
+      return;
+    }
+
+    // Deadline passed
+    const deadline = new Date(placementDrive.application_deadline);
+    if (deadline < new Date()) {
+      alert('The application deadline for this placement drive has passed.');
+      return;
+    }
+
     const url = '/api/student/applications';
     const response = await fetch(url, {
       method: 'POST',

@@ -250,6 +250,14 @@ async function applyToPlacementDrive() {
       alert('Your account has been blacklisted. You cannot apply to placement drives.');
       return;
     }
+
+    // Deadline passed
+    const deadline = new Date(placementDrive.value.application_deadline);
+    if (deadline < new Date()) {
+      alert('The application deadline for this placement drive has passed.');
+      return;
+    }
+
     const url = '/api/student/applications';
     const payload = { placement_drive_id: placementDrive.value.id };
     const response = await fetch(url, {
