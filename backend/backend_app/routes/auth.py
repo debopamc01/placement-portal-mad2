@@ -95,7 +95,7 @@ def get_user():
 
     return success_response(
         message="User exists",
-        data={"user": current_user.to_dict()},
+        data={"user": current_user.to_auth_dict()},
     )
 
 

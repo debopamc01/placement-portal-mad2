@@ -33,6 +33,17 @@ class User(db.Model, UserMixin):
             "role": self.role.value,
         }
 
+    def to_auth_dict(self):
+        data = self.to_dict()
+
+        if self.student is not None:
+            data["student"] = self.student.to_dict()
+
+        elif self.company is not None:
+            data["company"] = self.company.to_dict()
+
+        return data
+
     @validates("password_hash")
     def validate_password_hash(self, key, value):
         """

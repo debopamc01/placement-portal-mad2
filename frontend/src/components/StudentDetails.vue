@@ -9,6 +9,7 @@ const props = defineProps({
       email: '',
       description: '',
       resume_filename: '',
+      blacklisted: false,
     }),
   },
 
@@ -48,6 +49,7 @@ const localStudent = reactive({
   email: '',
   description: '',
   resume_filename: '',
+  blacklisted: false,
 });
 
 watch(
@@ -60,6 +62,7 @@ watch(
       email: student.email ?? '',
       description: student.description ?? '',
       resume_filename: student.resume_filename ?? '',
+      blacklisted: student.blacklisted,
     });
   },
   { immediate: true },
@@ -162,6 +165,17 @@ function submit() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold"> Blacklisted </label>
+          <div>
+            <span
+              class="badge"
+              :class="localStudent.blacklisted ? 'bg-danger' : 'bg-success'"
+              readonly
+              >{{ localStudent.blacklisted ? 'YES' : 'NO' }}</span
+            >
           </div>
         </div>
       </div>

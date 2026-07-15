@@ -528,3 +528,23 @@ def blacklist_student(student_id: int):
         return success_response(data={"student": student.to_dict()})
     except Exception as e:
         return error_response(errors=str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR)
+
+
+@admin_bp.post("/students/<int:student_id>/approve")
+@login_required
+@role_required(UserRole.ADMIN)
+def approve_student(student_id: int):
+
+    try:
+        student: Student | None = db.session.scalar(
+            db.select(Student).where(Student.id == student_id)
+        )
+        if not student:
+            return error_response(
+                errors="Student does not exist", status=HTTPStatus.NOT_FOUND
+            )
+        student.blacklisted = False
+        db.session.commit()
+        return success_response(data={"student": student.to_dict()})
+    except Exception as e:
+        return error_response(errors=str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR)

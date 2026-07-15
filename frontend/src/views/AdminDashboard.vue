@@ -190,6 +190,32 @@ async function blacklistStudent(studentId) {
   }
 }
 
+async function approveStudent(studentId) {
+  errorMessage.value = '';
+
+  try {
+    const url = `/api/admin/students/${studentId}/approve`;
+    const response = await fetch(url, {
+      method: 'POST',
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      errorMessage.value = 'Unable to approve student';
+      return;
+    }
+
+    const student = students.value.find((student) => student.id === studentId);
+
+    if (student) {
+      student.blacklisted = false;
+    }
+  } catch (error) {
+    console.error(error);
+    errorMessage.value = 'Unable to approve student';
+  }
+}
+
 async function fetchApplications() {
   errorMessage.value = '';
 
@@ -485,10 +511,11 @@ onMounted(() => {
       <StudentsTable
         v-if="activeTab === 'students'"
         :students="filteredStudents"
-        :actions="['view', 'blacklist', 'delete']"
+        :actions="['view', 'blacklist', 'delete', 'approve']"
         @view="viewStudent"
         @blacklist="blacklistStudent"
         @view-resume="downloadResume"
+        @approve="approveStudent"
       />
 
       <div class="mt-4" v-if="activeTab === 'placement-drives'">

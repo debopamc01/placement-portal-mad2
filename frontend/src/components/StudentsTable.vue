@@ -8,7 +8,7 @@ defineProps({
   actions: {
     type: Array,
     default: () => [],
-    // Options: ['view']
+    // Options: ['view', 'approve', 'blacklist', 'delete']
   },
 
   resumeExists: {
@@ -17,7 +17,7 @@ defineProps({
   },
 });
 
-const emit = defineEmits(['view', 'blacklist', 'delete', 'viewResume']);
+const emit = defineEmits(['view', 'blacklist', 'delete', 'viewResume', 'approve']);
 </script>
 
 <template>
@@ -79,13 +79,22 @@ const emit = defineEmits(['view', 'blacklist', 'delete', 'viewResume']);
                       View Profile
                     </button>
                   </li>
-                  <li v-if="actions.includes('blacklist')">
+                  <li v-if="actions.includes('blacklist') && !student.blacklisted">
                     <button
                       type="button"
                       class="dropdown-item text-danger"
                       @click="emit('blacklist', student.id)"
                     >
                       Blacklist
+                    </button>
+                  </li>
+                  <li v-if="actions.includes('approve') && student.blacklisted">
+                    <button
+                      type="button"
+                      class="dropdown-item text-success"
+                      @click="emit('approve', student.id)"
+                    >
+                      Approve
                     </button>
                   </li>
                   <li v-if="actions.includes('delete')">

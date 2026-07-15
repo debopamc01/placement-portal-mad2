@@ -53,11 +53,6 @@ const props = defineProps({
   },
 });
 
-async function logout() {
-  await authStore.logout();
-  router.push('/login');
-}
-
 async function goBack() {
   router.back();
 }
@@ -244,8 +239,17 @@ async function updatePlacementDriveStatus(action) {
 async function applyToPlacementDrive() {
   errorMessage.value = '';
   try {
-    // TODO: Block duplicate application
+    // Already applied
+    if (placementDrive.value.has_applied) {
+      alert('You have already applied to this placement drive.');
+      return;
+    }
 
+    // Blacklisted
+    if (authStore.user.student.blacklisted) {
+      alert('Your account has been blacklisted. You cannot apply to placement drives.');
+      return;
+    }
     const url = '/api/student/applications';
     const payload = { placement_drive_id: placementDrive.value.id };
     const response = await fetch(url, {
@@ -283,47 +287,47 @@ watchEffect(async () => {
 </script>
 <template>
   <div class="container mt-4">
-  <NavBar :title="'Placement Drive Details'"/>
-  <PlacementDriveDetails
-    v-if="mode === 'create'"
-    :mode="mode"
-    :loading="loading"
-    @create="createPlacementDrive"
-    @back="goBack"
-  />
+    <NavBar :title="'Placement Drive Details'" />
+    <PlacementDriveDetails
+      v-if="mode === 'create'"
+      :mode="mode"
+      :loading="loading"
+      @create="createPlacementDrive"
+      @back="goBack"
+    />
 
-  <PlacementDriveDetails
-    v-else-if="placementDrive"
-    :placement-drive="placementDrive"
-    :mode="mode"
-    :loading="loading"
-    :show-applications-count="mode === 'view' && role !== 'student'"
-    :allowed-actions="allowedActionsForPlacementDrive"
-    @save="saveEditedPlacementDrive"
-    @edit="navigateToEditPage"
-    @close="updatePlacementDriveStatus('close')"
-    @reopen="updatePlacementDriveStatus('reopen')"
-    @approve="updatePlacementDriveStatus('approve')"
-    @decline="updatePlacementDriveStatus('decline')"
-    @back="goBack"
-    @apply="applyToPlacementDrive"
-  />
+    <PlacementDriveDetails
+      v-else-if="placementDrive"
+      :placement-drive="placementDrive"
+      :mode="mode"
+      :loading="loading"
+      :show-applications-count="mode === 'view' && role !== 'student'"
+      :allowed-actions="allowedActionsForPlacementDrive"
+      @save="saveEditedPlacementDrive"
+      @edit="navigateToEditPage"
+      @close="updatePlacementDriveStatus('close')"
+      @reopen="updatePlacementDriveStatus('reopen')"
+      @approve="updatePlacementDriveStatus('approve')"
+      @decline="updatePlacementDriveStatus('decline')"
+      @back="goBack"
+      @apply="applyToPlacementDrive"
+    />
 
-  <div v-else-if="errorMessage" class="alert alert-danger">
-    {{ errorMessage }}
-  </div>
+    <div v-else-if="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
 
-  <div v-else class="text-center mt-5">Loading...</div>
+    <div v-else class="text-center mt-5">Loading...</div>
 
-  <ApplicationsTable
-    v-if="placementDrive && mode === 'view'"
-    :applications="applications"
-    :actions="allowedActionsForApplication"
-    :disable-actions-button="placementDrive.status !== 'active'"
-    @shortlist="(applicationId) => updateApplicationStatus(applicationId, 'shortlist')"
-    @select="(applicationId) => updateApplicationStatus(applicationId, 'select')"
-    @reject="(applicationId) => updateApplicationStatus(applicationId, 'reject')"
-    @view="(applicationId) => viewApplicationDetails(applicationId)"
-  />
+    <ApplicationsTable
+      v-if="placementDrive && mode === 'view'"
+      :applications="applications"
+      :actions="allowedActionsForApplication"
+      :disable-actions-button="placementDrive.status !== 'active'"
+      @shortlist="(applicationId) => updateApplicationStatus(applicationId, 'shortlist')"
+      @select="(applicationId) => updateApplicationStatus(applicationId, 'select')"
+      @reject="(applicationId) => updateApplicationStatus(applicationId, 'reject')"
+      @view="(applicationId) => viewApplicationDetails(applicationId)"
+    />
   </div>
 </template>
