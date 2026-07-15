@@ -416,3 +416,95 @@ def get_applications():
     return success_response(
         data={"applications": [application.to_dict() for application in applications]}
     )
+
+
+@admin_bp.delete("/companies/<int:company_id>")
+@login_required
+@role_required(UserRole.ADMIN)
+def delete_company(company_id: int):
+
+    try:
+        company: Company | None = db.session.scalar(
+            db.select(Company).where(Company.id == company_id)
+        )
+        if not company:
+            return error_response(
+                errors="Company does not exist", status=HTTPStatus.NOT_FOUND
+            )
+
+        user = company.user
+
+        db.session.delete(user)
+        db.session.commit()
+
+        return success_response(message="Company deleted successfully")
+    except Exception as e:
+        return error_response(errors=str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR)
+
+
+@admin_bp.delete("/students/<int:student_id>")
+@login_required
+@role_required(UserRole.ADMIN)
+def delete_student(student_id: int):
+
+    try:
+        student: Student | None = db.session.scalar(
+            db.select(Student).where(Student.id == student_id)
+        )
+        if not student:
+            return error_response(
+                errors="Student does not exist", status=HTTPStatus.NOT_FOUND
+            )
+
+        user = student.user
+
+        db.session.delete(user)
+        db.session.commit()
+
+        return success_response(message="Student deleted successfully")
+    except Exception as e:
+        return error_response(errors=str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR)
+
+
+@admin_bp.delete("/placement-drives/<int:pd_id>")
+@login_required
+@role_required(UserRole.ADMIN)
+def delete_placement_drive(pd_id: int):
+
+    try:
+        placement_drive: PlacementDrive | None = db.session.scalar(
+            db.select(PlacementDrive).where(PlacementDrive.id == pd_id)
+        )
+        if not placement_drive:
+            return error_response(
+                errors="Placement drive does not exist", status=HTTPStatus.NOT_FOUND
+            )
+
+        db.session.delete(placement_drive)
+        db.session.commit()
+
+        return success_response(message="Placement drive deleted successfully")
+    except Exception as e:
+        return error_response(errors=str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR)
+
+
+@admin_bp.delete("/applications/<int:app_id>")
+@login_required
+@role_required(UserRole.ADMIN)
+def delete_application(app_id: int):
+
+    try:
+        application: JobApplication | None = db.session.scalar(
+            db.select(JobApplication).where(JobApplication.id == app_id)
+        )
+        if not application:
+            return error_response(
+                errors="Application does not exist", status=HTTPStatus.NOT_FOUND
+            )
+
+        db.session.delete(application)
+        db.session.commit()
+
+        return success_response(message="Application deleted successfully")
+    except Exception as e:
+        return error_response(errors=str(e), status=HTTPStatus.INTERNAL_SERVER_ERROR)
