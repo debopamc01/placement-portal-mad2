@@ -501,7 +501,7 @@ onMounted(() => {
       <CompaniesTable
         v-if="activeTab === 'companies'"
         :companies="filteredCompanies"
-        :actions="['view', 'approve', 'reject', 'blacklist', 'delete']"
+        :actions="['view', 'approve', 'reject', 'blacklist']"
         @view="viewCompany"
         @approve="(companyId) => modify_company(companyId, 'approve')"
         @reject="(companyId) => modify_company(companyId, 'reject')"
@@ -511,7 +511,7 @@ onMounted(() => {
       <StudentsTable
         v-if="activeTab === 'students'"
         :students="filteredStudents"
-        :actions="['view', 'blacklist', 'delete', 'approve']"
+        :actions="['view', 'blacklist', 'approve']"
         @view="viewStudent"
         @blacklist="blacklistStudent"
         @view-resume="downloadResume"
@@ -525,7 +525,7 @@ onMounted(() => {
           </div>
           <PlacementDriveTable
             :placement-drives="filteredPlacementDrives"
-            :actions="['approve', 'decline', 'reopen', 'close', 'delete', 'view']"
+            :actions="['approve', 'decline', 'reopen', 'close', 'view']"
             :show-company="true"
             @approve="(placementDriveId) => modifyPlacementDrive(placementDriveId, 'approve')"
             @decline="(placementDriveId) => modifyPlacementDrive(placementDriveId, 'decline')"

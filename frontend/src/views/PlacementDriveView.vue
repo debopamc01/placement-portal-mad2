@@ -22,7 +22,7 @@ const role = computed(() => authStore.user?.role?.toLowerCase() ?? '');
 const allowedActionsForPlacementDrive = computed(() => {
   switch (role.value) {
     case 'admin':
-      return ['approve', 'decline', 'close', 'reopen', 'edit', 'delete'];
+      return ['approve', 'decline', 'close', 'reopen', 'edit'];
     case 'company':
       return ['close', 'reopen', 'edit'];
     case 'student':
